@@ -1,3 +1,17 @@
+# [2.12.0](https://github.com/RedHatInsights/insights-rbac-ui/compare/v2.11.1...v2.12.0) (2026-02-25)
+
+
+### Bug Fixes
+
+* **roles:** add-role wizard Exit navigates to correct V2 roles path ([5438911](https://github.com/RedHatInsights/insights-rbac-ui/commit/54389112a836344a602825a12c03e036a6d0389b))
+* **roles:** remove debug console.log from EditRole form renderer ([ed4eb46](https://github.com/RedHatInsights/insights-rbac-ui/commit/ed4eb46db5489f8c3daaa724616d917780c407c1))
+* **user-journeys:** correct V2 sidebar nav assertions ([faac1b6](https://github.com/RedHatInsights/insights-rbac-ui/commit/faac1b660fbb9e514be9f8734fde8e82a7da540d))
+
+
+### Features
+
+* **access-management:** wire Invite Users in Access Management Users tab ([015cdb6](https://github.com/RedHatInsights/insights-rbac-ui/commit/015cdb6ccb50c86ac5d4eb750d7dc6744775349a))
+
 ## [2.11.1](https://github.com/RedHatInsights/insights-rbac-ui/compare/v2.11.0...v2.11.1) (2026-02-18)
 
 
