@@ -1,3 +1,14 @@
+## [2.12.1](https://github.com/RedHatInsights/insights-rbac-ui/compare/v2.12.0...v2.12.1) (2026-02-26)
+
+
+### Bug Fixes
+
+* **ci:** skip Chromatic upload when Storybook build fails ([eb2cb78](https://github.com/RedHatInsights/insights-rbac-ui/commit/eb2cb781aa2adf8fcc76a4e78514eac69a34cff3))
+* **docs:** address CodeRabbit review feedback ([51ca895](https://github.com/RedHatInsights/insights-rbac-ui/commit/51ca8953d696e126522044058f08a723e5e44795))
+* **docs:** address second-round CodeRabbit feedback on UserJourneys.mdx ([885cff1](https://github.com/RedHatInsights/insights-rbac-ui/commit/885cff1b5930ca66dc82201fb1bfba84498088b5))
+* **docs:** fix groupMembers type and AGENTS.md link in docs ([0a9ee20](https://github.com/RedHatInsights/insights-rbac-ui/commit/0a9ee20ab68085235a27645c22b6345db9e8cc43))
+* **docs:** replace waitFor async callbacks and delay() with findBy* in UserJourneys examples ([e17e0cd](https://github.com/RedHatInsights/insights-rbac-ui/commit/e17e0cd8dc2b1c1cf8032072832a5e720de4fee8))
+
 # [2.12.0](https://github.com/RedHatInsights/insights-rbac-ui/compare/v2.11.1...v2.12.0) (2026-02-25)
 
 
