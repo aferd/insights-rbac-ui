@@ -416,26 +416,28 @@ export const GroupDetailsDrawer: React.FC<GroupDetailsDrawerProps> = ({
                   )}
                 </div>
                 <DrawerActions>
-                  {currentWorkspace && !showInheritance && (() => {
-                    const items: ActionDropdownItem[] = [
-                      {
-                        key: 'edit-access',
-                        label: intl.formatMessage(messages.editAccess),
-                        onClick: () => {
-                          if (currentWorkspace) {
-                            navigate(pathnames['workspace-role-access'].link(currentWorkspace.id, group.id));
-                          }
+                  {currentWorkspace &&
+                    !showInheritance &&
+                    (() => {
+                      const items: ActionDropdownItem[] = [
+                        {
+                          key: 'edit-access',
+                          label: intl.formatMessage(messages.editAccess),
+                          onClick: () => {
+                            if (currentWorkspace) {
+                              navigate(pathnames['workspace-role-access'].link(currentWorkspace.id, group.id));
+                            }
+                          },
                         },
-                      },
-                      {
-                        key: 'remove-access',
-                        label: intl.formatMessage(messages.removeAccess),
-                        isDanger: true,
-                        onClick: () => onRemoveFromWorkspace?.(group),
-                      },
-                    ];
-                    return <ActionDropdown items={items} ariaLabel={`Actions for ${group.name}`} ouiaId={`${ouiaId}-drawer-actions`} />;
-                  })()}
+                        {
+                          key: 'remove-access',
+                          label: intl.formatMessage(messages.removeAccess),
+                          isDanger: true,
+                          onClick: () => onRemoveFromWorkspace?.(group),
+                        },
+                      ];
+                      return <ActionDropdown items={items} ariaLabel={`Actions for ${group.name}`} ouiaId={`${ouiaId}-drawer-actions`} />;
+                    })()}
                   <DrawerCloseButton onClick={onClose} />
                 </DrawerActions>
               </DrawerHead>
