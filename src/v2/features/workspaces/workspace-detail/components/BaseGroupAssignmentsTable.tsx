@@ -60,6 +60,7 @@ export const BaseGroupAssignmentsTable: React.FC<BaseGroupAssignmentsTableProps>
 }) => {
   const intl = useIntl();
   const navigate = useAppNavigate();
+  const grantAccessEnabled = useWorkspacesFlag('m4');
 
   const [focusedGroup, setFocusedGroup] = useState<WorkspaceGroupRow | undefined>();
   const [internalWizardOpen, setInternalWizardOpen] = useState(false);
@@ -159,14 +160,14 @@ export const BaseGroupAssignmentsTable: React.FC<BaseGroupAssignmentsTableProps>
       currentWorkspace ? (
         <Button
           variant="primary"
-          isDisabled={!canGrantAccess}
+          isDisabled={!grantAccessEnabled || !canGrantAccess}
           onClick={() => setIsGrantAccessWizardOpen(true)}
           ouiaId={`${ouiaId}-grant-access-button`}
         >
           {intl.formatMessage(messages.grantAccess)}
         </Button>
       ) : undefined,
-    [canGrantAccess, ouiaId, intl, currentWorkspace],
+    [grantAccessEnabled, canGrantAccess, ouiaId, intl, currentWorkspace],
   );
 
   return (
