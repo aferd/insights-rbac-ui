@@ -48,7 +48,12 @@ export const OrganizationManagement = () => {
         </Flex>
       </PageHeader>
       <PageSection>
-        <BaseGroupAssignmentsTable groups={roleBindings} isLoading={roleBindingsIsLoading} ouiaId="organization-role-assignments-table" />
+        <BaseGroupAssignmentsTable
+          groups={roleBindings}
+          isLoading={roleBindingsIsLoading}
+          ouiaId="organization-role-assignments-table"
+          syncWithUrl={false}
+        />
       </PageSection>
     </>
   );

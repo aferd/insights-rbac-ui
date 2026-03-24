@@ -261,7 +261,7 @@ const WORKSPACE_ARGS = {
   totalCount: mockGroups.length,
   isLoading: false,
   workspaceName: 'Test Workspace',
-  currentWorkspace: { id: 'ws-test', name: 'Test Workspace' },
+  currentWorkspace: { id: 'ws-test', name: 'Test Workspace', type: 'workspace' as const },
 } as const;
 
 export const RowActionsEnabled: Story = {

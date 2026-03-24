@@ -494,7 +494,7 @@ export const WithRoleBindingsTableTest: Story = {
       );
 
       // Test table headers are present
-      await expect(canvas.findByText('User group')).resolves.toBeInTheDocument();
+      await expect(canvas.findByText('User group name')).resolves.toBeInTheDocument();
       await expect(canvas.findByText('Description')).resolves.toBeInTheDocument();
 
       // Now test table functionality - all group names should be visible
