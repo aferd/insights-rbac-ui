@@ -288,10 +288,10 @@ export const RowActionsEnabled: Story = {
       await userEvent.click(kebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).not.toHaveAttribute('disabled');
 
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await expect(removeItem.closest('button')).not.toHaveAttribute('disabled');
     });
   },
@@ -321,10 +321,10 @@ export const RowActionsDisabledByPermission: Story = {
       await userEvent.click(kebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).toHaveAttribute('disabled');
 
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await expect(removeItem.closest('button')).toHaveAttribute('disabled');
     });
   },
@@ -354,10 +354,10 @@ export const EditAccessDisabledRevokeEnabled: Story = {
       await userEvent.click(kebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).toHaveAttribute('disabled');
 
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await expect(removeItem.closest('button')).not.toHaveAttribute('disabled');
     });
   },
