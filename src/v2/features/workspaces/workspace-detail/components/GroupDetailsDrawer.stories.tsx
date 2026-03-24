@@ -439,7 +439,7 @@ export const InheritedState: Story = {
       await canvas.findByText(/editing access to a parent workspace must be done within that workspace/i);
 
       // Verify no "Edit access" or "Remove group" buttons
-      await expect(canvas.queryByRole('button', { name: /edit access for this workspace/i })).not.toBeInTheDocument();
+      await expect(canvas.queryByRole('button', { name: /^edit access$/i })).not.toBeInTheDocument();
       await expect(canvas.queryByRole('button', { name: /remove group from workspace/i })).not.toBeInTheDocument();
 
       // Verify role names are present

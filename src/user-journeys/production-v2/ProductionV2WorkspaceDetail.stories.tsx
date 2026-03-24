@@ -119,7 +119,7 @@ Tests workspace detail pages with the Roles tab, including group drawer and pare
       const drawer = await waitForDrawer();
       await drawer.findByRole('heading', { name: KESSEL_GROUP_PROD_ADMINS.name });
 
-      await expect(drawer.findByRole('button', { name: /edit access for this workspace/i })).resolves.toBeInTheDocument();
+      await expect(canvas.findByRole('button', { name: /edit access for this workspace/i })).resolves.toBeInTheDocument();
 
       const rolesTab = await drawer.findByRole('tab', { name: /^roles$/i });
       const usersTab = await drawer.findByRole('tab', { name: /^users$/i });
@@ -364,7 +364,7 @@ End-to-end flow for removing a group's access via the kebab menu.
       await user.click(kebabButton);
 
       const body = within(document.body);
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await user.click(removeItem);
     });
 

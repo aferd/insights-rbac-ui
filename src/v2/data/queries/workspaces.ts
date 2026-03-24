@@ -369,10 +369,20 @@ export function useGrantAccessMutation(options?: MutationOptions) {
 
   return useMutation(
     {
-      mutationFn: async ({ workspaceId, groupIds, roleIds }: { workspaceId: string; groupIds: string[]; roleIds: string[] }) => {
+      mutationFn: async ({
+        workspaceId,
+        groupIds,
+        roleIds,
+        resourceType = 'workspace',
+      }: {
+        workspaceId: string;
+        groupIds: string[];
+        roleIds: string[];
+        resourceType?: 'workspace' | 'tenant';
+      }) => {
         const requests = groupIds.flatMap((groupId) =>
           roleIds.map((roleId) => ({
-            resource: { id: workspaceId, type: 'workspace' },
+            resource: { id: workspaceId, type: resourceType },
             subject: { id: groupId, type: 'group' as const },
             role: { id: roleId },
           })),

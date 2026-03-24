@@ -135,7 +135,7 @@ export function useOrgGroups(organizationId: string, options?: { enabled?: boole
     {
       resourceId: `redhat/${organizationId}`,
       resourceType: 'tenant',
-      fields: 'subject(id,group.name,group.user_count,group.description),roles(id,name)',
+      fields: 'subject(id,group.name,group.user_count,group.description),roles(id,name),last_modified',
       limit: ROLE_BINDINGS_LIMIT,
     },
     { enabled: options?.enabled ?? true },

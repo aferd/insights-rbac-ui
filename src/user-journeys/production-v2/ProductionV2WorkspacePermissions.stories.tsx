@@ -522,8 +522,8 @@ User has \`view\` on all non-root workspaces but no \`create\`, \`edit\`, or \`d
 
 ### Checks
 - "Grant access" toolbar button: disabled
-- Row kebab "Edit access" and "Remove from workspace": disabled
-- Drawer "Edit access" and "Remove from workspace" buttons: disabled
+- Row kebab "Edit access" and "Remove access": disabled
+- Drawer "Edit access" and "Remove access" buttons: disabled
 - Header menu "Edit workspace", "Grant access", "Delete workspace": disabled
         `,
       },
@@ -565,9 +565,9 @@ User has \`view\` on all non-root workspaces but no \`create\`, \`edit\`, or \`d
       await user.click(kebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).toHaveAttribute('disabled');
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await expect(removeItem.closest('button')).toHaveAttribute('disabled');
 
       await user.keyboard('{Escape}');
@@ -618,7 +618,7 @@ User has \`view\` and \`create\` but no \`edit\`, \`delete\`, or \`move\`.
 
 ### Checks
 - "Grant access" toolbar button: enabled
-- Row kebab "Edit access": enabled; "Remove from workspace": disabled
+- Row kebab "Edit access": enabled; "Remove access": disabled
 - Header menu "Grant access" and "Create subworkspace": enabled; "Edit workspace", "Delete workspace": disabled
         `,
       },
@@ -659,9 +659,9 @@ User has \`view\` and \`create\` but no \`edit\`, \`delete\`, or \`move\`.
       await user.click(kebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).not.toHaveAttribute('disabled');
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await expect(removeItem.closest('button')).toHaveAttribute('disabled');
 
       await user.keyboard('{Escape}');
@@ -703,7 +703,7 @@ User has \`view\` and \`delete\` but no \`create\`, \`edit\`, or \`move\`.
 
 ### Checks
 - "Grant access" toolbar button: disabled
-- Row kebab "Edit access": disabled; "Remove from workspace": enabled
+- Row kebab "Edit access": disabled; "Remove access": enabled
 - Header menu "Delete workspace": enabled; "Grant access", "Edit workspace": disabled
         `,
       },
@@ -744,9 +744,9 @@ User has \`view\` and \`delete\` but no \`create\`, \`edit\`, or \`move\`.
       await user.click(kebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).toHaveAttribute('disabled');
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await expect(removeItem.closest('button')).not.toHaveAttribute('disabled');
 
       await user.keyboard('{Escape}');
@@ -863,9 +863,9 @@ Production (ws-1) has full access; siblings (ws-2, ws-3) and parents are view-on
       await user.click(kebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).not.toHaveAttribute('disabled');
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await expect(removeItem.closest('button')).not.toHaveAttribute('disabled');
       await user.keyboard('{Escape}');
 
@@ -909,9 +909,9 @@ Production (ws-1) has full access; siblings (ws-2, ws-3) and parents are view-on
       await user.click(viewersKebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).toHaveAttribute('disabled');
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await expect(removeItem.closest('button')).toHaveAttribute('disabled');
       await user.keyboard('{Escape}');
 
@@ -1006,7 +1006,7 @@ export const EditAccessViaKebab: Story = {
 ## Edit Access via Row Kebab
 
 User with full permissions navigates to Production detail, opens the row kebab for
-${KESSEL_GROUP_PROD_ADMINS.name}, clicks "Edit access for this workspace", and
+${KESSEL_GROUP_PROD_ADMINS.name}, clicks "Edit access", and
 verifies the RoleAccessModal opens.
 
 ### Checks
@@ -1047,7 +1047,7 @@ verifies the RoleAccessModal opens.
       await user.click(kebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).not.toHaveAttribute('disabled');
       await user.click(editItem);
     });

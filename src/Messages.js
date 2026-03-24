@@ -947,6 +947,11 @@ export default defineMessages({
     description: 'Roles plural',
     defaultMessage: 'Roles',
   },
+  adminOrViewerRole: {
+    id: 'adminOrViewerRole',
+    description: 'Admin or viewer role column label',
+    defaultMessage: 'Admin or Viewer role',
+  },
   userGroups: {
     id: 'userGroups',
     description: 'User groups plural',
@@ -956,6 +961,11 @@ export default defineMessages({
     id: 'userGroup',
     description: 'User group singular',
     defaultMessage: 'User group',
+  },
+  userGroupName: {
+    id: 'userGroupName',
+    description: 'User group name column header',
+    defaultMessage: 'User group name',
   },
   groups: {
     id: 'groups',
@@ -3341,5 +3351,10 @@ export default defineMessages({
     id: 'removeGroupFromWorkspaceErrorTitle',
     description: 'Error notification when removing group from workspace fails',
     defaultMessage: 'Failed to remove group from workspace',
+  },
+  removeAccess: {
+    id: 'removeAccess',
+    description: 'Remove access action label',
+    defaultMessage: 'Remove access',
   },
 });

@@ -115,7 +115,9 @@ export const WorkspaceDetail = () => {
     }
   };
 
-  const currentWorkspace = selectedWorkspace ? { id: selectedWorkspace.id ?? '', name: selectedWorkspace.name ?? '' } : undefined;
+  const currentWorkspace = selectedWorkspace
+    ? { id: selectedWorkspace.id ?? '', name: selectedWorkspace.name ?? '', type: 'workspace' as const }
+    : undefined;
 
   // Kessel view-permission guard — deny only once permissions are fully resolved.
   // During 'settling', permissions default to all-false; redirecting then would be

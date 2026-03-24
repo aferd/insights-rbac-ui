@@ -261,7 +261,7 @@ const WORKSPACE_ARGS = {
   totalCount: mockGroups.length,
   isLoading: false,
   workspaceName: 'Test Workspace',
-  currentWorkspace: { id: 'ws-test', name: 'Test Workspace' },
+  currentWorkspace: { id: 'ws-test', name: 'Test Workspace', type: 'workspace' as const },
 } as const;
 
 export const RowActionsEnabled: Story = {
@@ -284,14 +284,14 @@ export const RowActionsEnabled: Story = {
 
       const firstGroupRow = await canvas.findByText(mockGroups[0].name);
       const row = firstGroupRow.closest('tr') as HTMLElement;
-      const kebab = within(row).getByLabelText(`Actions for ${mockGroups[0].name}`);
+      const kebab = within(row).getByLabelText(new RegExp(`actions for ${mockGroups[0].name}`, 'i'));
       await userEvent.click(kebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).not.toHaveAttribute('disabled');
 
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await expect(removeItem.closest('button')).not.toHaveAttribute('disabled');
     });
   },
@@ -317,14 +317,14 @@ export const RowActionsDisabledByPermission: Story = {
 
       const firstGroupRow = await canvas.findByText(mockGroups[0].name);
       const row = firstGroupRow.closest('tr') as HTMLElement;
-      const kebab = within(row).getByLabelText(`Actions for ${mockGroups[0].name}`);
+      const kebab = within(row).getByLabelText(new RegExp(`actions for ${mockGroups[0].name}`, 'i'));
       await userEvent.click(kebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).toHaveAttribute('disabled');
 
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await expect(removeItem.closest('button')).toHaveAttribute('disabled');
     });
   },
@@ -350,14 +350,14 @@ export const EditAccessDisabledRevokeEnabled: Story = {
 
       const firstGroupRow = await canvas.findByText(mockGroups[0].name);
       const row = firstGroupRow.closest('tr') as HTMLElement;
-      const kebab = within(row).getByLabelText(`Actions for ${mockGroups[0].name}`);
+      const kebab = within(row).getByLabelText(new RegExp(`actions for ${mockGroups[0].name}`, 'i'));
       await userEvent.click(kebab);
 
       const body = within(document.body);
-      const editItem = await body.findByText(/edit access for this workspace/i);
+      const editItem = await body.findByText(/^edit access$/i);
       await expect(editItem.closest('button')).toHaveAttribute('disabled');
 
-      const removeItem = await body.findByText(/remove from workspace/i);
+      const removeItem = await body.findByText(/^remove access$/i);
       await expect(removeItem.closest('button')).not.toHaveAttribute('disabled');
     });
   },

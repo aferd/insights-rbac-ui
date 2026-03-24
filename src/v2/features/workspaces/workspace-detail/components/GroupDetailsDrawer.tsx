@@ -35,6 +35,7 @@ import { TableView } from '../../../../../shared/components/table-view/TableView
 import type { CellRendererMap, ColumnConfigMap } from '../../../../../shared/components/table-view/types';
 import useAppNavigate from '../../../../../shared/hooks/useAppNavigate';
 import pathnames from '../../../../utilities/pathnames';
+import { ActionDropdown, type ActionDropdownItem } from '../../../../../shared/components/ActionDropdown/ActionDropdown';
 
 // Extended Role interface to include inheritedFrom data
 export interface RoleWithInheritance {
@@ -55,7 +56,7 @@ interface GroupDetailsDrawerProps {
   ouiaId?: string;
   children: React.ReactNode;
   showInheritance?: boolean;
-  currentWorkspace?: { id: string; name: string };
+  currentWorkspace?: { id: string; name: string; type?: 'workspace' | 'tenant' };
   /** Whether the user has permission to edit role bindings (Kessel `create` relation, MVP proxy). */
   canEditAccess?: boolean;
   /** Whether the user has permission to revoke role bindings (Kessel `delete` relation, MVP proxy). */
@@ -404,10 +405,39 @@ export const GroupDetailsDrawer: React.FC<GroupDetailsDrawerProps> = ({
           group ? (
             <DrawerPanelContent data-testid="detail-drawer-panel">
               <DrawerHead>
-                <Title headingLevel="h2" size="lg">
-                  {group.name}
-                </Title>
+                <div>
+                  <Title headingLevel="h2" size="lg">
+                    {group.name}
+                  </Title>
+                  {group.description && (
+                    <Content component="p" className="pf-v6-u-color-200 pf-v6-u-pt-sm">
+                      {group.description}
+                    </Content>
+                  )}
+                </div>
                 <DrawerActions>
+                  {currentWorkspace &&
+                    !showInheritance &&
+                    (() => {
+                      const items: ActionDropdownItem[] = [
+                        {
+                          key: 'edit-access',
+                          label: intl.formatMessage(messages.editAccess),
+                          onClick: () => {
+                            if (currentWorkspace) {
+                              navigate(pathnames['workspace-role-access'].link(currentWorkspace.id, group.id));
+                            }
+                          },
+                        },
+                        {
+                          key: 'remove-access',
+                          label: intl.formatMessage(messages.removeAccess),
+                          isDanger: true,
+                          onClick: () => onRemoveFromWorkspace?.(group),
+                        },
+                      ];
+                      return <ActionDropdown items={items} ariaLabel={`Actions for ${group.name}`} ouiaId={`${ouiaId}-drawer-actions`} />;
+                    })()}
                   <DrawerCloseButton onClick={onClose} />
                 </DrawerActions>
               </DrawerHead>
@@ -428,22 +458,6 @@ export const GroupDetailsDrawer: React.FC<GroupDetailsDrawerProps> = ({
                   />
                 </div>
               )}
-              {currentWorkspace && !showInheritance && (
-                <Flex className="pf-v6-u-px-md pf-v6-u-pb-md" gap={{ default: 'gapSm' }}>
-                  <Button
-                    variant="secondary"
-                    isDisabled={!canEditAccess}
-                    onClick={() => group && navigate(pathnames['workspace-role-access'].link(currentWorkspace.id, group.id))}
-                  >
-                    {intl.formatMessage(messages.editAccessForThisWorkspace)}
-                  </Button>
-                  {onRemoveFromWorkspace && (
-                    <Button variant="secondary" isDanger isDisabled={!canRevokeAccess} onClick={() => group && onRemoveFromWorkspace(group)}>
-                      {intl.formatMessage(messages.removeGroupFromWorkspace)}
-                    </Button>
-                  )}
-                </Flex>
-              )}
               <Tabs activeKey={activeTab} onSelect={(_, tabIndex) => setActiveTab(tabIndex)} isFilled>
                 <Tab eventKey={0} title={intl.formatMessage(messages.roles)}>
                   <div className="pf-v6-u-p-md">{activeTab === 0 && renderRolesTab()}</div>
@@ -452,6 +466,22 @@ export const GroupDetailsDrawer: React.FC<GroupDetailsDrawerProps> = ({
                   <div className="pf-v6-u-p-md">{activeTab === 1 && renderUsersTab()}</div>
                 </Tab>
               </Tabs>
+              {currentWorkspace && !showInheritance && (
+                <Flex className="pf-v6-u-px-md pf-v6-u-pt-md pf-v6-u-pb-md" gap={{ default: 'gapSm' }}>
+                  <Button
+                    variant="secondary"
+                    isDisabled={!canEditAccess}
+                    onClick={() => group && currentWorkspace && navigate(pathnames['workspace-role-access'].link(currentWorkspace.id, group.id))}
+                  >
+                    {intl.formatMessage(messages.editAccessForThisWorkspace)}
+                  </Button>
+                  {onRemoveFromWorkspace && (
+                    <Button variant="secondary" isDanger isDisabled={!canRevokeAccess} onClick={() => group && onRemoveFromWorkspace?.(group)}>
+                      {intl.formatMessage(messages.removeGroupFromWorkspace)}
+                    </Button>
+                  )}
+                </Flex>
+              )}
             </DrawerPanelContent>
           ) : null
         }

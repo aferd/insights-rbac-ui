@@ -28,7 +28,7 @@ export interface BaseGroupAssignmentsTableProps {
   totalCount?: number;
   isLoading: boolean;
   workspaceName?: string;
-  currentWorkspace?: { id: string; name: string };
+  currentWorkspace?: { id: string; name: string; type: 'workspace' | 'tenant' };
   ouiaId?: string;
   /** Whether the user has permission to grant access (Kessel `create` relation). Defaults to `false`. */
   canGrantAccess?: boolean;
@@ -36,6 +36,8 @@ export interface BaseGroupAssignmentsTableProps {
   canEditAccess?: boolean;
   /** Whether the user has permission to revoke role bindings (Kessel `delete` relation, MVP proxy). Defaults to `false`. */
   canRevokeAccess?: boolean;
+  /** Whether to sync table state (sort, filters, pagination) with URL params. Defaults to `true`. */
+  syncWithUrl?: boolean;
   /** Controlled state: whether the grant access wizard is open */
   isGrantAccessWizardOpen?: boolean;
   /** Controlled callback: toggle the grant access wizard */
@@ -52,6 +54,7 @@ export const BaseGroupAssignmentsTable: React.FC<BaseGroupAssignmentsTableProps>
   canGrantAccess = false,
   canEditAccess = false,
   canRevokeAccess = false,
+  syncWithUrl = true,
   isGrantAccessWizardOpen: externalWizardOpen,
   onGrantAccessWizardToggle,
 }) => {
@@ -72,12 +75,12 @@ export const BaseGroupAssignmentsTable: React.FC<BaseGroupAssignmentsTableProps>
     initialSort: { column: 'name', direction: 'asc' },
     initialPerPage: 20,
     initialFilters: { name: '' },
-    syncWithUrl: true,
+    syncWithUrl,
   });
 
   const columnConfig: ColumnConfigMap<typeof columns> = useMemo(
     () => ({
-      name: { label: intl.formatMessage(messages.userGroup), sortable: true },
+      name: { label: intl.formatMessage(messages.userGroupName), sortable: true },
       description: { label: intl.formatMessage(messages.description) },
       userCount: { label: intl.formatMessage(messages.users), sortable: true },
       roleCount: { label: intl.formatMessage(messages.roles), sortable: true },
@@ -120,7 +123,7 @@ export const BaseGroupAssignmentsTable: React.FC<BaseGroupAssignmentsTableProps>
       const items: ActionDropdownItem[] = [
         {
           key: 'edit-access',
-          label: intl.formatMessage(messages.editAccessForThisWorkspace),
+          label: intl.formatMessage(messages.editAccess),
           onClick: () => {
             if (currentWorkspace) {
               navigate(pathnames['workspace-role-access'].link(currentWorkspace.id, group.id));
@@ -128,10 +131,9 @@ export const BaseGroupAssignmentsTable: React.FC<BaseGroupAssignmentsTableProps>
           },
           isDisabled: !currentWorkspace || !canEditAccess,
         },
-        { key: 'divider', label: '', isDivider: true },
         {
-          key: 'remove-from-workspace',
-          label: intl.formatMessage(messages.removeGroupFromWorkspace),
+          key: 'remove-access',
+          label: intl.formatMessage(messages.removeAccess),
           isDanger: true,
           onClick: () => setGroupToRemove(group),
           isDisabled: !canRevokeAccess,
@@ -217,6 +219,7 @@ export const BaseGroupAssignmentsTable: React.FC<BaseGroupAssignmentsTableProps>
         <GrantAccessWizard
           workspaceName={workspaceName}
           workspaceId={currentWorkspace.id}
+          resourceType={currentWorkspace.type}
           afterSubmit={() => setIsGrantAccessWizardOpen(false)}
           onCancel={() => setIsGrantAccessWizardOpen(false)}
         />
