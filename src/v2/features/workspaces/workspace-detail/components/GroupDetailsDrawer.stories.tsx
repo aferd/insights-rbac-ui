@@ -246,10 +246,10 @@ export const Default: Story = {
       // Wait for drawer to open and show group name
       await canvas.findByText('Platform Administrators');
 
-      const editAccessButton = await canvas.findByRole('button', { name: /^edit access$/i });
+      const editAccessButton = await canvas.findByRole('button', { name: /edit access for this workspace/i });
       await expect(editAccessButton).toBeEnabled();
 
-      const removeButton = await canvas.findByRole('button', { name: /^remove access$/i });
+      const removeButton = await canvas.findByRole('button', { name: /remove from workspace/i });
       await expect(removeButton).toBeEnabled();
 
       // Verify tabs are present - Roles tab should be active by default
@@ -297,7 +297,7 @@ export const OpenState: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
     await step('Verify open state', async () => {
-      const editAccessButton = await canvas.findByRole('button', { name: /^edit access$/i });
+      const editAccessButton = await canvas.findByRole('button', { name: /edit access for this workspace/i });
       await expect(editAccessButton).toBeInTheDocument();
 
       const closeButton = await canvas.findByRole('button', { name: /close drawer panel/i });
@@ -506,10 +506,10 @@ export const PermissionDenied: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
     await step('Verify both buttons are disabled when permissions are denied', async () => {
-      const editAccessButton = await canvas.findByRole('button', { name: /^edit access$/i });
+      const editAccessButton = await canvas.findByRole('button', { name: /edit access for this workspace/i });
       await expect(editAccessButton).toBeDisabled();
 
-      const removeButton = await canvas.findByRole('button', { name: /^remove access$/i });
+      const removeButton = await canvas.findByRole('button', { name: /remove from workspace/i });
       await expect(removeButton).toBeDisabled();
     });
   },
@@ -536,10 +536,10 @@ export const EditOnlyPermission: Story = {
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
     await step('Verify edit enabled but revoke disabled', async () => {
-      const editAccessButton = await canvas.findByRole('button', { name: /^edit access$/i });
+      const editAccessButton = await canvas.findByRole('button', { name: /edit access for this workspace/i });
       await expect(editAccessButton).toBeEnabled();
 
-      const removeButton = await canvas.findByRole('button', { name: /^remove access$/i });
+      const removeButton = await canvas.findByRole('button', { name: /remove from workspace/i });
       await expect(removeButton).toBeDisabled();
     });
   },

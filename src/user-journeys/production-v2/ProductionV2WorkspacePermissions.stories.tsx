@@ -578,10 +578,10 @@ User has \`view\` on all non-root workspaces but no \`create\`, \`edit\`, or \`d
       await user.click(groupText);
 
       const drawer = await waitForDrawer();
-      const editAccessButton = await drawer.findByRole('button', { name: /^edit access$/i });
+      const editAccessButton = await drawer.findByRole('button', { name: /edit access for this workspace/i });
       await expect(editAccessButton).toBeDisabled();
 
-      const removeButton = await drawer.findByRole('button', { name: /^remove access$/i });
+      const removeButton = await drawer.findByRole('button', { name: /remove from workspace/i });
       await expect(removeButton).toBeDisabled();
     });
 
@@ -871,9 +871,9 @@ Production (ws-1) has full access; siblings (ws-2, ws-3) and parents are view-on
 
       await user.click(groupText);
       const drawer = await waitForDrawer();
-      const drawerEdit = await drawer.findByRole('button', { name: /^edit access$/i });
+      const drawerEdit = await drawer.findByRole('button', { name: /edit access for this workspace/i });
       await expect(drawerEdit).toBeEnabled();
-      const drawerRemove = await drawer.findByRole('button', { name: /^remove access$/i });
+      const drawerRemove = await drawer.findByRole('button', { name: /remove from workspace/i });
       await expect(drawerRemove).toBeEnabled();
     });
 
@@ -917,9 +917,9 @@ Production (ws-1) has full access; siblings (ws-2, ws-3) and parents are view-on
 
       await user.click(viewersText);
       const drawer = await waitForDrawer();
-      const drawerEdit = await drawer.findByRole('button', { name: /^edit access$/i });
+      const drawerEdit = await drawer.findByRole('button', { name: /edit access for this workspace/i });
       await expect(drawerEdit).toBeDisabled();
-      const drawerRemove = await drawer.findByRole('button', { name: /^remove access$/i });
+      const drawerRemove = await drawer.findByRole('button', { name: /remove from workspace/i });
       await expect(drawerRemove).toBeDisabled();
 
       const actionsButtons = await canvas.findAllByRole('button', { name: /^actions$/i });

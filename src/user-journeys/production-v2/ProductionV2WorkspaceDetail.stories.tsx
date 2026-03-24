@@ -119,7 +119,7 @@ Tests workspace detail pages with the Roles tab, including group drawer and pare
       const drawer = await waitForDrawer();
       await drawer.findByRole('heading', { name: KESSEL_GROUP_PROD_ADMINS.name });
 
-      await expect(drawer.findByRole('button', { name: /^edit access$/i })).resolves.toBeInTheDocument();
+      await expect(canvas.findByRole('button', { name: /edit access for this workspace/i })).resolves.toBeInTheDocument();
 
       const rolesTab = await drawer.findByRole('tab', { name: /^roles$/i });
       const usersTab = await drawer.findByRole('tab', { name: /^users$/i });
@@ -575,7 +575,7 @@ Complete flow for editing role access via the RoleAccessModal.
       const drawer = await waitForDrawer();
       await drawer.findByRole('heading', { name: KESSEL_GROUP_PROD_ADMINS.name });
 
-      const editAccessButton = await drawer.findByRole('button', { name: /^edit access$/i });
+      const editAccessButton = await drawer.findByRole('button', { name: /edit access for this workspace/i });
       await expect(editAccessButton).toBeInTheDocument();
       await user.click(editAccessButton);
     });
@@ -680,7 +680,7 @@ Same flow as EditRoleAccess but for the Viewers group.
       const drawer = await waitForDrawer();
       await drawer.findByRole('heading', { name: KESSEL_GROUP_VIEWERS.name });
 
-      const editAccessButton = await drawer.findByRole('button', { name: /^edit access$/i });
+      const editAccessButton = await drawer.findByRole('button', { name: /edit access for this workspace/i });
       await user.click(editAccessButton);
     });
 
