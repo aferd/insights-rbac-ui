@@ -204,7 +204,7 @@ export const BaseGroupAssignmentsTable: React.FC<BaseGroupAssignmentsTableProps>
         onFiltersChange={tableState.onFiltersChange}
         clearAllFilters={tableState.clearAllFilters}
         toolbarActions={toolbarActions}
-        renderActions={currentWorkspace && canGrantAccess ? renderActions : undefined}
+        renderActions={currentWorkspace ? renderActions : undefined}
         onRowClick={handleRowClick}
         isRowClickable={() => true}
         variant="compact"

@@ -284,7 +284,7 @@ export const RowActionsEnabled: Story = {
 
       const firstGroupRow = await canvas.findByText(mockGroups[0].name);
       const row = firstGroupRow.closest('tr') as HTMLElement;
-      const kebab = within(row).getByLabelText(`Actions for ${mockGroups[0].name}`);
+      const kebab = within(row).getByLabelText(new RegExp(`actions for ${mockGroups[0].name}`, 'i'));
       await userEvent.click(kebab);
 
       const body = within(document.body);
@@ -317,7 +317,7 @@ export const RowActionsDisabledByPermission: Story = {
 
       const firstGroupRow = await canvas.findByText(mockGroups[0].name);
       const row = firstGroupRow.closest('tr') as HTMLElement;
-      const kebab = within(row).getByLabelText(`Actions for ${mockGroups[0].name}`);
+      const kebab = within(row).getByLabelText(new RegExp(`actions for ${mockGroups[0].name}`, 'i'));
       await userEvent.click(kebab);
 
       const body = within(document.body);
@@ -350,7 +350,7 @@ export const EditAccessDisabledRevokeEnabled: Story = {
 
       const firstGroupRow = await canvas.findByText(mockGroups[0].name);
       const row = firstGroupRow.closest('tr') as HTMLElement;
-      const kebab = within(row).getByLabelText(`Actions for ${mockGroups[0].name}`);
+      const kebab = within(row).getByLabelText(new RegExp(`actions for ${mockGroups[0].name}`, 'i'));
       await userEvent.click(kebab);
 
       const body = within(document.body);

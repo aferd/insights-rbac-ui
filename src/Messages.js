@@ -3352,11 +3352,6 @@ export default defineMessages({
     description: 'Error notification when removing group from workspace fails',
     defaultMessage: 'Failed to remove group from workspace',
   },
-  editAccess: {
-    id: 'editAccess',
-    description: 'Edit access action label',
-    defaultMessage: 'Edit access',
-  },
   removeAccess: {
     id: 'removeAccess',
     description: 'Remove access action label',

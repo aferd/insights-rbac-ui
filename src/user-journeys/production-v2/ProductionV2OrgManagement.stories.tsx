@@ -34,7 +34,7 @@ Tests the Organization-Wide Access page content and group details drawer.
 4. Click a group row to open the drawer
 5. Verify drawer shows group name, roles tab with role data
 6. Switch to Users tab, verify member data
-7. Verify NO workspace-specific actions (no "Edit access", no "Remove from workspace")
+7. Verify NO workspace-specific actions (no "Edit access", no "Remove access")
 8. Close the drawer
         `,
       },
@@ -72,8 +72,8 @@ Tests the Organization-Wide Access page content and group details drawer.
     await step('Verify drawer content and roles tab', async () => {
       await canvas.findByRole('heading', { name: KESSEL_GROUP_PROD_ADMINS.name });
 
-      expect(canvas.queryByRole('button', { name: /edit access for this workspace/i })).not.toBeInTheDocument();
-      expect(canvas.queryByRole('button', { name: /remove.*from workspace/i })).not.toBeInTheDocument();
+      expect(canvas.queryByRole('button', { name: /^edit access$/i })).not.toBeInTheDocument();
+      expect(canvas.queryByRole('button', { name: /^remove access$/i })).not.toBeInTheDocument();
 
       await canvas.findByText(KESSEL_ROLE_WS_ADMIN.name!);
       await canvas.findByText(KESSEL_ROLE_WS_VIEWER.name!);
