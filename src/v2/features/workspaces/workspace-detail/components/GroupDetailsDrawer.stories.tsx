@@ -8,6 +8,8 @@ import {
   groupMembersErrorHandlers,
   groupMembersLoadingHandlers,
 } from '../../../../../shared/data/mocks/groupMembers.handlers';
+import messages from '../../../../../Messages';
+import { GROUP_ADMIN_DEFAULT, GROUP_SYSTEM_DEFAULT } from '../../../../../shared/data/mocks/seed';
 import { GroupDetailsDrawer } from './GroupDetailsDrawer';
 import type { InheritedWorkspaceGroupRow, WorkspaceGroupRow } from '../../../../data/queries/groupAssignments';
 import { type Member } from '../../../../../v2/data/queries/groups';
@@ -35,12 +37,18 @@ const mockUsers: Member[] = [
   },
 ];
 
+const ALL_USERS_EMPTY_TITLE = messages.allUsers.defaultMessage;
+const ALL_USERS_EMPTY_BODY = messages.allUsersAreMembers.defaultMessage;
+const ALL_ORG_ADMINS_EMPTY_TITLE = messages.allOrgAdmins.defaultMessage;
+const ALL_ORG_ADMINS_EMPTY_BODY = messages.allOrgAdminsAreMembers.defaultMessage;
+
 const mockGroup: WorkspaceGroupRow = {
   id: 'group-1',
   name: 'Platform Administrators',
   description: 'Full access to all platform resources and administrative functions',
   userCount: 12,
   isDefaultGroup: false,
+  isAdminDefault: false,
   roleCount: 2,
   roles: [
     { id: '1', name: 'Administrator' },
@@ -146,6 +154,7 @@ const mockInheritedGroup: InheritedWorkspaceGroupRow = {
   description: 'Inherited group from parent workspace',
   userCount: 3,
   isDefaultGroup: false,
+  isAdminDefault: false,
   roleCount: 2,
   roles: [
     { id: 'role-1', name: 'RHEL DevOps' },
@@ -540,6 +549,92 @@ export const EditOnlyPermission: Story = {
       await expect(editAccessButton).toBeEnabled();
 
       await expect(canvas.queryByRole('button', { name: /remove from workspace/i })).not.toBeInTheDocument();
+    });
+  },
+};
+
+const defaultAccessWorkspaceGroup: WorkspaceGroupRow = {
+  id: GROUP_SYSTEM_DEFAULT.uuid,
+  name: GROUP_SYSTEM_DEFAULT.name,
+  description: GROUP_SYSTEM_DEFAULT.description ?? '',
+  userCount: ALL_USERS_EMPTY_TITLE,
+  isDefaultGroup: true,
+  isAdminDefault: false,
+  roleCount: 0,
+  roles: [],
+  lastModified: GROUP_SYSTEM_DEFAULT.modified ?? '',
+};
+
+const adminDefaultWorkspaceGroup: WorkspaceGroupRow = {
+  id: GROUP_ADMIN_DEFAULT.uuid,
+  name: GROUP_ADMIN_DEFAULT.name,
+  description: GROUP_ADMIN_DEFAULT.description ?? '',
+  userCount: ALL_ORG_ADMINS_EMPTY_TITLE,
+  isDefaultGroup: true,
+  isAdminDefault: true,
+  roleCount: 0,
+  roles: [],
+  lastModified: GROUP_ADMIN_DEFAULT.modified ?? '',
+};
+
+/** Default access (`platform_default`): Users tab shows implicit membership empty state. */
+export const DefaultAccessUsersTab: Story = {
+  render: (args) => <DrawerExample {...args} />,
+  args: {
+    isOpen: true,
+    group: defaultAccessWorkspaceGroup,
+    onClose: fn(),
+    ouiaId: 'group-details-drawer-default-access-users-tab',
+  },
+  parameters: {
+    msw: {
+      handlers: [...createGroupMembersHandlers({}, {})],
+    },
+    docs: {
+      description: {
+        story: 'Workspace drawer for Default access: Users tab shows “All users” messaging instead of a member list (implicit membership).',
+      },
+    },
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    await step('Open Users tab and verify default access empty state', async () => {
+      await canvas.findByText(GROUP_SYSTEM_DEFAULT.name);
+      const usersTab = await canvas.findByRole('tab', { name: /users/i });
+      await userEvent.click(usersTab);
+      await expect(canvas.findByRole('heading', { name: ALL_USERS_EMPTY_TITLE })).resolves.toBeInTheDocument();
+      await expect(canvas.findByText(ALL_USERS_EMPTY_BODY)).resolves.toBeInTheDocument();
+    });
+  },
+};
+
+/** Default admin access (`admin_default`): Users tab shows org admins empty state. */
+export const AdminDefaultUsersTab: Story = {
+  render: (args) => <DrawerExample {...args} />,
+  args: {
+    isOpen: true,
+    group: adminDefaultWorkspaceGroup,
+    onClose: fn(),
+    ouiaId: 'group-details-drawer-admin-default-users-tab',
+  },
+  parameters: {
+    msw: {
+      handlers: [...createGroupMembersHandlers({}, {})],
+    },
+    docs: {
+      description: {
+        story: 'Workspace drawer for Default admin access: Users tab shows “All org admins” messaging instead of a member list.',
+      },
+    },
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    await step('Open Users tab and verify admin default empty state', async () => {
+      await canvas.findByText(GROUP_ADMIN_DEFAULT.name);
+      const usersTab = await canvas.findByRole('tab', { name: /users/i });
+      await userEvent.click(usersTab);
+      await expect(canvas.findByRole('heading', { name: ALL_ORG_ADMINS_EMPTY_TITLE })).resolves.toBeInTheDocument();
+      await expect(canvas.findByText(ALL_ORG_ADMINS_EMPTY_BODY)).resolves.toBeInTheDocument();
     });
   },
 };

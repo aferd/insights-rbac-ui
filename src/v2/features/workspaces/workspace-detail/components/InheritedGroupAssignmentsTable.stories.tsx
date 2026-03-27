@@ -13,6 +13,7 @@ const mockInheritedGroups: InheritedWorkspaceGroupRow[] = [
     description: 'Full access to all platform resources and administrative functions',
     userCount: 12,
     isDefaultGroup: false,
+    isAdminDefault: false,
     roleCount: 2,
     roles: [
       { id: 'role-1', name: 'Workspace Administrator' },
@@ -30,6 +31,7 @@ const mockInheritedGroups: InheritedWorkspaceGroupRow[] = [
     description: 'Access to development resources and environments',
     userCount: 25,
     isDefaultGroup: false,
+    isAdminDefault: false,
     roleCount: 1,
     roles: [{ id: 'role-3', name: 'Developer' }],
     lastModified: '2024-01-18T16:20:00Z',
@@ -44,6 +46,7 @@ const mockInheritedGroups: InheritedWorkspaceGroupRow[] = [
     description: '',
     userCount: 8,
     isDefaultGroup: false,
+    isAdminDefault: false,
     roleCount: 1,
     roles: [{ id: 'role-4', name: 'Tester' }],
     lastModified: '2024-01-19T13:30:00Z',

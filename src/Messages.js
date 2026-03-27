@@ -1761,6 +1761,11 @@ export default defineMessages({
     description: 'Add member',
     defaultMessage: 'Add member',
   },
+  allOrgAdmins: {
+    id: 'allOrgAdmins',
+    description: 'All org admins label for admin default groups',
+    defaultMessage: 'All org admins',
+  },
   allOrgAdminsAreMembers: {
     id: 'allOrgAdminsAreMembers',
     description: 'All org. admins are members of this group message',

@@ -258,10 +258,16 @@ export const GroupDetailsDrawer: React.FC<GroupDetailsDrawerProps> = ({
   const renderUsersTab = useCallback(() => {
     // Show loading state
     if (group?.isDefaultGroup) {
+      const isAdmin = group.isAdminDefault;
       return (
         <div className="pf-v6-u-pt-md">
-          <EmptyState variant="sm" headingLevel="h4" icon={UsersIcon} titleText={intl.formatMessage(messages.allUsers)}>
-            <EmptyStateBody>{intl.formatMessage(messages.allUsersAreMembers)}</EmptyStateBody>
+          <EmptyState
+            variant="sm"
+            headingLevel="h4"
+            icon={UsersIcon}
+            titleText={intl.formatMessage(isAdmin ? messages.allOrgAdmins : messages.allUsers)}
+          >
+            <EmptyStateBody>{intl.formatMessage(isAdmin ? messages.allOrgAdminsAreMembers : messages.allUsersAreMembers)}</EmptyStateBody>
           </EmptyState>
         </div>
       );
