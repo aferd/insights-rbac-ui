@@ -70,7 +70,6 @@ export interface UsersQueryResult {
     is_active?: boolean;
     is_org_admin?: boolean;
     external_source_id?: number | string;
-    user_groups_count?: number;
   }>;
   totalCount: number;
 }
@@ -137,11 +136,8 @@ export function useUsersQuery(params: UseUsersQueryParams = {}, options?: QueryO
 
         // Transform API response to clean typed structure
         // Use type assertion for fields that might be in the response but not in the strict type
-        type PrincipalWithExtras = (typeof data.data)[number] & {
-          user_groups_count?: number;
-        };
         const users = (data?.data ?? []).map((principal) => {
-          const p = principal as PrincipalWithExtras;
+          const p = principal as (typeof data.data)[number];
           return {
             username: p.username,
             email: 'email' in p ? (p.email as string) : '',
@@ -150,7 +146,6 @@ export function useUsersQuery(params: UseUsersQueryParams = {}, options?: QueryO
             is_active: 'is_active' in p ? p.is_active : undefined,
             is_org_admin: 'is_org_admin' in p ? p.is_org_admin : undefined,
             external_source_id: 'external_source_id' in p ? p.external_source_id : undefined,
-            user_groups_count: p.user_groups_count,
           };
         });
 
@@ -210,8 +205,7 @@ export function useChangeUserStatusMutation(options?: MutationOptions) {
       const accountId = identity?.org_id ?? null;
 
       if (accountId && !isITLess) {
-        // External IT API for status change
-        return Promise.all(
+        const responses = await Promise.all(
           users.map((user) => {
             const url = `${getITApiUrl(environment)}/account/v1/accounts/${accountId}/users/${user.id}/status`;
             return fetch(url, {
@@ -226,12 +220,15 @@ export function useChangeUserStatusMutation(options?: MutationOptions) {
             });
           }),
         );
+        const failed = responses.find((r) => !r.ok);
+        if (failed) throw new Error(`Status change failed: ${failed.status}`);
+        return responses;
       }
 
       // ITLess fallback - use dynamic base URL from env.json
       // In tests, env.json doesn't exist, so baseUrl is empty string -> '/change-users-status'
       const envUrl = await fetchEnvBaseUrl();
-      return fetch(`${envUrl}/change-users-status`, {
+      const response = await fetch(`${envUrl}/change-users-status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -239,9 +236,29 @@ export function useChangeUserStatusMutation(options?: MutationOptions) {
         },
         body: JSON.stringify({ users }),
       });
+      if (!response.ok) throw new Error(`Status change failed: ${response.status}`);
+      return response;
+    },
+    onMutate: async ({ users: mutatedUsers }) => {
+      await queryClient.cancelQueries({ queryKey: usersKeys.lists() });
+
+      const previousQueries = queryClient.getQueriesData<UsersQueryResult>({
+        queryKey: usersKeys.lists(),
+      });
+
+      const usernameToStatus = new Map(mutatedUsers.map((u) => [u.username, u.is_active]));
+
+      for (const [key, data] of previousQueries) {
+        if (!data) continue;
+        queryClient.setQueryData(key, {
+          ...data,
+          users: data.users.map((u) => (usernameToStatus.has(u.username) ? { ...u, is_active: usernameToStatus.get(u.username) } : u)),
+        });
+      }
+
+      return { previousQueries };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: usersKeys.all });
       addNotification({
         variant: 'success',
         title: intl.formatMessage(messages.editUserSuccessTitle),
@@ -249,13 +266,21 @@ export function useChangeUserStatusMutation(options?: MutationOptions) {
         description: intl.formatMessage(messages.editUserSuccessDescription),
       });
     },
-    onError: () => {
+    onError: (_err, _vars, context) => {
+      if (context?.previousQueries) {
+        for (const [key, data] of context.previousQueries) {
+          queryClient.setQueryData(key, data);
+        }
+      }
       addNotification({
         variant: 'danger',
         title: intl.formatMessage(messages.editUserErrorTitle),
         dismissable: true,
         description: intl.formatMessage(messages.editUserErrorDescription),
       });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: usersKeys.all });
     },
   });
 }
