@@ -76,6 +76,15 @@ export const DEFAULT_V2_ROLES: Role[] = [
   },
 ];
 
+/**
+ * Maps resource types to role IDs assignable at that level.
+ * Used by MSW handlers to simulate backend resource_type filtering.
+ */
+export const ROLES_BY_RESOURCE_TYPE: Record<string, string[]> = {
+  tenant: ['role-tenant-admin'],
+  workspace: ['role-workspace-admin', 'role-rhel-devops', 'role-inventory-viewer'],
+};
+
 export const DEFAULT_WORKSPACES: WorkspacesWorkspace[] = [
   {
     id: 'root-1',

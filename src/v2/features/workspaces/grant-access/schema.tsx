@@ -9,7 +9,7 @@ export interface GrantAccessFormValues {
   // Add form fields here when needed
 }
 
-export const schemaBuilder = (workspaceName: string) => {
+export const schemaBuilder = (workspaceName: string, workspaceId?: string, resourceType?: 'workspace' | 'tenant') => {
   const cache = createIntlCache();
   const intl = createIntl({ locale, messages: providerMessages[locale as keyof typeof providerMessages] }, cache);
 
@@ -26,7 +26,10 @@ export const schemaBuilder = (workspaceName: string) => {
         showTitles: true,
         disableForwardJumping: true,
         container: getModalContainer(),
-        title: intl.formatMessage(messages.grantAccessInWorkspace, { workspaceName }),
+        title:
+          resourceType === 'tenant'
+            ? intl.formatMessage(messages.grantAccessInOrganization)
+            : intl.formatMessage(messages.grantAccessInWorkspace, { workspaceName }),
         fields: [
           {
             title: intl.formatMessage(messages.selectUserGroups),
@@ -53,6 +56,8 @@ export const schemaBuilder = (workspaceName: string) => {
                 component: 'roles-selection',
                 isRequired: true,
                 validate: [requireNonEmptyArray(intl.formatMessage(messages.selectAtLeastOneRole))],
+                workspaceId,
+                resourceType,
               },
             ],
           },
@@ -64,6 +69,8 @@ export const schemaBuilder = (workspaceName: string) => {
               {
                 name: 'review-selection',
                 component: 'review-selection',
+                workspaceId,
+                resourceType,
               },
             ],
           },
