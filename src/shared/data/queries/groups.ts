@@ -294,7 +294,7 @@ export function useSystemGroupQuery(options?: { enabled?: boolean }): UseQueryRe
       // Extract the first platform_default group from the response
       const groups = (response.data as GroupsListResponse)?.data ?? [];
       const systemGroup = groups.find((group) => group.platform_default);
-      return systemGroup ?? null;
+      return systemGroup ? normalizeDefaultGroupCount(systemGroup) : null;
     },
     staleTime: 5 * 60 * 1000, // System group rarely changes, cache for 5 minutes
     enabled: options?.enabled ?? true,

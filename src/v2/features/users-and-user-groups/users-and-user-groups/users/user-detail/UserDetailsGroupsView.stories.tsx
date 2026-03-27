@@ -262,18 +262,7 @@ export const DefaultGroupCounts: Story = {
       },
     },
     msw: {
-      handlers: [
-        ...groupsHandlers([
-          {
-            ...GROUP_SYSTEM_DEFAULT,
-            principalCount: ALL_USERS_LABEL,
-          },
-          {
-            ...GROUP_ADMIN_DEFAULT,
-            principalCount: ALL_ORG_ADMINS_LABEL,
-          },
-        ]),
-      ],
+      handlers: [...groupsHandlers([GROUP_SYSTEM_DEFAULT, GROUP_ADMIN_DEFAULT])],
     },
   },
   play: async ({ canvasElement, step }) => {
