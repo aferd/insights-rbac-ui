@@ -181,6 +181,28 @@ export const groupsKeys = {
 };
 
 // ============================================================================
+// Private: normalize default group principalCount
+// ============================================================================
+
+const DEFAULT_GROUP_LABELS = {
+  allUsers: messages.allUsers.defaultMessage,
+  allOrgAdmins: messages.allOrgAdmins.defaultMessage,
+} as const;
+
+function normalizeDefaultGroupCount<T extends { platform_default?: boolean; admin_default?: boolean; principalCount?: number }>(group: T): T {
+  if (group.platform_default) return { ...group, principalCount: DEFAULT_GROUP_LABELS.allUsers };
+  if (group.admin_default) return { ...group, principalCount: DEFAULT_GROUP_LABELS.allOrgAdmins };
+  return group;
+}
+
+function normalizeGroupList(data: GroupsListResponse): GroupsListResponse {
+  return {
+    ...data,
+    data: data.data?.map((g) => normalizeDefaultGroupCount(g)),
+  };
+}
+
+// ============================================================================
 // Query Hooks
 // ============================================================================
 
@@ -220,7 +242,7 @@ export function useGroupsQuery(params: UseGroupsQueryParams = {}, options?: Quer
           username: params.username,
           excludeUsername: params.excludeUsername,
         });
-        return response.data as GroupsListResponse;
+        return normalizeGroupList(response.data as GroupsListResponse);
       },
       enabled: options?.enabled ?? true,
     },
@@ -244,12 +266,11 @@ export function useAdminGroupQuery(options?: { enabled?: boolean }): UseQueryRes
         limit: 1,
         adminDefault: true,
       });
-      // Extract the first admin_default group from the response
       const groups = (response.data as GroupsListResponse)?.data ?? [];
       const adminGroup = groups.find((group) => group.admin_default);
-      return adminGroup ?? null;
+      return adminGroup ? normalizeDefaultGroupCount(adminGroup) : null;
     },
-    staleTime: 5 * 60 * 1000, // Admin group rarely changes, cache for 5 minutes
+    staleTime: 5 * 60 * 1000,
     enabled: options?.enabled ?? true,
   });
 }
@@ -294,7 +315,7 @@ export function useGroupQuery(id: string, options?: QueryOptions): UseQueryResul
       queryKey: groupsKeys.detail(id),
       queryFn: async (): Promise<GroupOut> => {
         const response = await groupsApi.getGroup({ uuid: id });
-        return response.data as GroupOut;
+        return normalizeDefaultGroupCount(response.data as GroupOut);
       },
       enabled: (options?.enabled ?? true) && !!id,
     },

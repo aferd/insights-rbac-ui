@@ -3,8 +3,10 @@ import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import { BrowserRouter } from 'react-router-dom';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
+import messages from '../../../../../Messages';
 import { expectLoadingVisible, getSkeletonCount, waitForDrawer, waitForModal, waitForModalClose } from '../../../../../test-utils/interactionHelpers';
 import { UserGroups } from './UserGroups';
+import { GROUP_ADMIN_DEFAULT, GROUP_SYSTEM_DEFAULT } from '../../../../../shared/data/mocks/seed';
 import { groupsErrorHandlers, groupsHandlers, groupsLoadingHandlers } from '../../../../../shared/data/mocks/groups.handlers';
 import type { GroupOut } from '../../../../../shared/data/mocks/db';
 import { createGroupMembersHandlers, groupMembersHandlers } from '../../../../../shared/data/mocks/groupMembers.handlers';
@@ -138,6 +140,27 @@ const standardGroupRoles: Record<
 const standardMembers: Record<string, Principal[]> = Object.fromEntries(
   Object.entries(standardMembersRaw).map(([k, v]) => [k, v.map((m) => ({ ...m, external_source_id: m.external_source_id ?? m.username }))]),
 ) as Record<string, Principal[]>;
+
+const ALL_USERS_EMPTY_TITLE = messages.allUsers.defaultMessage;
+const ALL_USERS_EMPTY_BODY = messages.allUsersAreMembers.defaultMessage;
+const ALL_ORG_ADMINS_EMPTY_TITLE = messages.allOrgAdmins.defaultMessage;
+const ALL_ORG_ADMINS_EMPTY_BODY = messages.allOrgAdminsAreMembers.defaultMessage;
+
+const seedGroupToGroupOut = (g: typeof GROUP_SYSTEM_DEFAULT): GroupOut => ({
+  uuid: g.uuid,
+  name: g.name,
+  description: g.description ?? '',
+  principalCount: typeof g.principalCount === 'number' ? g.principalCount : 0,
+  roleCount: g.roleCount ?? 0,
+  created: g.created ?? '',
+  modified: g.modified ?? '',
+  platform_default: g.platform_default ?? false,
+  admin_default: g.admin_default ?? false,
+  system: g.system ?? false,
+});
+
+const defaultAccessOnlyGroupsForHandlers: GroupOut[] = [seedGroupToGroupOut(GROUP_SYSTEM_DEFAULT)];
+const adminDefaultOnlyGroupsForHandlers: GroupOut[] = [seedGroupToGroupOut(GROUP_ADMIN_DEFAULT)];
 
 // Mock group data
 const mockGroups: Group[] = [
@@ -677,6 +700,68 @@ export const ErrorStateHandling: StoryObj<typeof meta> = {
         },
         { timeout: 5000 },
       );
+    });
+  },
+};
+
+/** Lists only Default access; opening the row shows implicit “All users” membership empty state in the drawer. */
+export const DefaultAccessDrawer: StoryObj<typeof meta> = {
+  parameters: {
+    msw: {
+      handlers: [...groupsHandlers(defaultAccessOnlyGroupsForHandlers), ...createGroupMembersHandlers({}, {}), ...groupRolesHandlers({})],
+    },
+    docs: {
+      description: {
+        story:
+          'User groups table with the platform default group only. The drawer Users tab shows the “All users” empty state; the table shows normalized principal count from `useGroupsQuery`.',
+      },
+    },
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    await step('Wait for default access group and normalized user count', async () => {
+      await expect(canvas.findByText(GROUP_SYSTEM_DEFAULT.name)).resolves.toBeInTheDocument();
+      await expect(canvas.findByText(ALL_USERS_EMPTY_TITLE)).resolves.toBeInTheDocument();
+    });
+    await step('Open drawer and verify Users tab empty state', async () => {
+      const nameCell = (await canvas.findAllByText(GROUP_SYSTEM_DEFAULT.name))[0];
+      const row = nameCell.closest('tr');
+      await expect(row).toBeTruthy();
+      await userEvent.click(row!);
+      const drawer = await waitForDrawer();
+      await expect(drawer.findByRole('heading', { name: ALL_USERS_EMPTY_TITLE })).resolves.toBeInTheDocument();
+      await expect(drawer.findByText(ALL_USERS_EMPTY_BODY)).resolves.toBeInTheDocument();
+    });
+  },
+};
+
+/** Lists only Default admin access; drawer shows “All org admins” implicit membership messaging. */
+export const AdminDefaultDrawer: StoryObj<typeof meta> = {
+  parameters: {
+    msw: {
+      handlers: [...groupsHandlers(adminDefaultOnlyGroupsForHandlers), ...createGroupMembersHandlers({}, {}), ...groupRolesHandlers({})],
+    },
+    docs: {
+      description: {
+        story:
+          'User groups table with the admin default group only. The drawer Users tab shows the “All org admins” empty state; the table shows normalized principal count.',
+      },
+    },
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    await step('Wait for admin default group and normalized user count', async () => {
+      await expect(canvas.findByText(GROUP_ADMIN_DEFAULT.name)).resolves.toBeInTheDocument();
+      await expect(canvas.findByText(ALL_ORG_ADMINS_EMPTY_TITLE)).resolves.toBeInTheDocument();
+    });
+    await step('Open drawer and verify Users tab empty state', async () => {
+      const nameCell = (await canvas.findAllByText(GROUP_ADMIN_DEFAULT.name))[0];
+      const row = nameCell.closest('tr');
+      await expect(row).toBeTruthy();
+      await userEvent.click(row!);
+      const drawer = await waitForDrawer();
+      await expect(drawer.findByRole('heading', { name: ALL_ORG_ADMINS_EMPTY_TITLE })).resolves.toBeInTheDocument();
+      await expect(drawer.findByText(ALL_ORG_ADMINS_EMPTY_BODY)).resolves.toBeInTheDocument();
     });
   },
 };
