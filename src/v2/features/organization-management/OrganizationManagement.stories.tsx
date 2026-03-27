@@ -1,11 +1,20 @@
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
-import { expect, waitFor, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import type { ScopedQueries } from '../../../test-utils/interactionHelpers';
+import { waitForModal } from '../../../test-utils/interactionHelpers';
+import { TEST_TIMEOUTS } from '../../../test-utils/testUtils';
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { OrganizationManagement } from './OrganizationManagement';
 import type { MockUserIdentity } from '../../../../.storybook/contexts/StorybookMockContext';
 import { roleBindingsBySubjectResponseHandlers } from '../../data/mocks/roleBindings.handlers';
+import { groupsHandlers } from '../../../shared/data/mocks/groups.handlers';
+import { groupMembersHandlers } from '../../../shared/data/mocks/groupMembers.handlers';
+import { v2RolesHandlers } from '../../data/mocks/roles.handlers';
+import { roleBindingsHandlers } from '../../data/mocks/roleBindings.handlers';
+import { DEFAULT_V2_ROLES, ROLES_BY_RESOURCE_TYPE, V2_ROLE_TENANT_ADMIN } from '../../data/mocks/seed';
+import { GROUP_PLATFORM_ADMINS } from '../../../shared/data/mocks/seed';
+import type { Role } from '../../data/mocks/db';
 
 // Base user identity template for DRY mock data
 const baseUserIdentity: MockUserIdentity = {
@@ -570,3 +579,90 @@ export const EmptyRoleBindingsState: Story = {
 
 // Note: ErrorState story removed - the mock context doesn't support error simulation.
 // Error handling is tested via unit tests instead.
+
+// --- Grant access stories ---
+
+const tenantRoleIds = new Set(ROLES_BY_RESOURCE_TYPE.tenant);
+function rolesForResource(resourceType: string): Role[] | null {
+  if (resourceType !== 'tenant') return null;
+  return DEFAULT_V2_ROLES.filter((r) => tenantRoleIds.has(r.id!));
+}
+
+const onListSpy = fn();
+
+export const GrantAccessWizard: Story = {
+  name: 'Grant organization-wide access',
+  tags: ['ff:platform.rbac.workspaces-role-bindings-write'],
+  parameters: {
+    userIdentity: mockUserWithAllData,
+    featureFlags: { 'platform.rbac.workspaces-role-bindings-write': true },
+    msw: {
+      handlers: [
+        ...roleBindingsBySubjectResponseHandlers(mockRoleBindingsResponse),
+        ...groupsHandlers(),
+        ...groupMembersHandlers({}, {}),
+        ...v2RolesHandlers(undefined, { onList: onListSpy, rolesForResource: (rt) => rolesForResource(rt) }),
+        ...roleBindingsHandlers(),
+      ],
+    },
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    const user = userEvent.setup();
+    onListSpy.mockClear();
+
+    await step('Verify grant access button is present for org admin', async () => {
+      await expect(canvas.findByRole('heading', { name: 'Organization-Wide Access' })).resolves.toBeInTheDocument();
+
+      await waitFor(
+        () => {
+          const grantBtn = canvas.queryByRole('button', { name: /grant access/i });
+          expect(grantBtn).toBeInTheDocument();
+        },
+        { timeout: TEST_TIMEOUTS.ELEMENT_WAIT },
+      );
+    });
+
+    await step('Open grant access wizard', async () => {
+      const grantBtn = canvas.getByRole('button', { name: /grant access/i });
+      await user.click(grantBtn);
+
+      const modal = await waitForModal();
+      await expect(modal.findByText(/grant organization-wide access/i)).resolves.toBeInTheDocument();
+    });
+
+    await step('Select a group and advance to roles step', async () => {
+      const modal = await waitForModal();
+
+      await waitFor(
+        () => {
+          expect(modal.queryByText(GROUP_PLATFORM_ADMINS.name)).toBeInTheDocument();
+        },
+        { timeout: TEST_TIMEOUTS.ELEMENT_WAIT },
+      );
+
+      const groupRow = (await modal.findByText(GROUP_PLATFORM_ADMINS.name)).closest('tr') as HTMLElement;
+      await user.click(within(groupRow).getByRole('checkbox'));
+
+      await waitFor(() => {
+        expect(modal.queryByRole('button', { name: /^next$/i })).toBeEnabled();
+      });
+      await user.click(modal.getByRole('button', { name: /^next$/i }));
+      await expect(modal.findByRole('heading', { name: /select role\(s\)/i })).resolves.toBeInTheDocument();
+    });
+
+    await step('Only tenant-level roles are shown', async () => {
+      const modal = await waitForModal();
+      await expect(modal.findByText(V2_ROLE_TENANT_ADMIN.name!)).resolves.toBeInTheDocument();
+    });
+
+    await step('API was called with resource_type=tenant', async () => {
+      await waitFor(() => {
+        expect(onListSpy).toHaveBeenCalled();
+        const lastCall = onListSpy.mock.calls[onListSpy.mock.calls.length - 1];
+        const params = lastCall[0] as URLSearchParams;
+        expect(params.get('resource_type')).toBe('tenant');
+      });
+    });
+  },
+};

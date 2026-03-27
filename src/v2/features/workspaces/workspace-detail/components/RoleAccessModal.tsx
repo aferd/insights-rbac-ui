@@ -63,7 +63,10 @@ export const RoleAccessModal: React.FC = () => {
   const { data: workspace, isLoading: workspaceLoading } = useWorkspaceQuery(workspaceId ?? '', {
     enabled: !!workspaceId,
   });
-  const { data: allRoles, isLoading: rolesLoading } = useAllRolesV2Query();
+  const { data: allRoles, isLoading: rolesLoading } = useAllRolesV2Query({
+    resourceType: 'workspace',
+    resourceId: workspaceId ?? undefined,
+  });
   const { data: bindingsData, isLoading: bindingsLoading } = useRoleBindingsQuery(
     {
       limit: 1000,

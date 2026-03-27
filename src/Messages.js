@@ -3169,6 +3169,11 @@ export default defineMessages({
     description: 'Grant access in workspace wizard title',
     defaultMessage: 'Grant access in Workspace {workspaceName}',
   },
+  grantAccessInOrganization: {
+    id: 'grantAccessInOrganization',
+    description: 'Grant access in organization wizard title',
+    defaultMessage: 'Grant organization-wide access',
+  },
   selectUserGroups: {
     id: 'selectUserGroups',
     description: 'Select user groups step title',

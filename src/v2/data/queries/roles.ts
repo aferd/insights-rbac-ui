@@ -85,15 +85,25 @@ export function useRolesV2Query(params: RolesV2QueryParams = {}, options?: { ena
  * Fetch all V2 roles (cursor-paginated fetch-all).
  * Useful for role pickers and wizards that need the full list.
  * Uses limit=-1 which the API supports to return all objects.
+ *
+ * `resourceType` and `resourceId` filter roles to those assignable at a
+ * specific resource level (workspace vs tenant).  These are passed as extra
+ * Axios query params until the rbac-client ships first-class support.
  */
-export function useAllRolesV2Query(options?: { enabled?: boolean; name?: string }) {
+export function useAllRolesV2Query(options?: { enabled?: boolean; name?: string; resourceType?: string; resourceId?: string }) {
+  const extraParams: Record<string, string> = {};
+  if (options?.resourceType) extraParams.resource_type = options.resourceType;
+  if (options?.resourceId) extraParams.resource_id = options.resourceId;
+  const hasExtra = Object.keys(extraParams).length > 0;
+
   const params: RolesListParams = {
     limit: -1,
     ...(options?.name && { name: options.name }),
+    ...(hasExtra && { options: { params: extraParams } }),
   };
 
   return useQuery({
-    queryKey: [...rolesV2Keys.lists(), 'all', options?.name] as const,
+    queryKey: [...rolesV2Keys.lists(), 'all', options?.name, options?.resourceType, options?.resourceId] as const,
     queryFn: async (): Promise<Role[]> => {
       const response = await rolesV2Api.rolesList(params);
       return response.data.data;

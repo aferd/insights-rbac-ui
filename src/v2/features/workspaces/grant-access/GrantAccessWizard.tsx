@@ -61,7 +61,7 @@ export const GrantAccessWizard: React.FunctionComponent<GrantAccessWizardProps> 
 
   return (
     <FormRenderer
-      schema={schemaBuilder(workspaceName)}
+      schema={schemaBuilder(workspaceName, workspaceId, resourceType)}
       componentMapper={customComponentMapper}
       FormTemplate={FormTemplate}
       onSubmit={onSubmit}
