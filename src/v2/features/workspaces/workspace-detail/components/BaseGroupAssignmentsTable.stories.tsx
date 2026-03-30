@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-webpack5';
 import React from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
-import { clearAndType, getSkeletonCount, queryDialog } from '../../../../../test-utils/interactionHelpers';
+import { clearAndType, getSkeletonCount, queryDialog, queryPagination } from '../../../../../test-utils/interactionHelpers';
 import { MemoryRouter } from 'react-router-dom';
 import { BaseGroupAssignmentsTable } from './BaseGroupAssignmentsTable';
 import type { WorkspaceGroupRow } from '../../../../data/queries/groupAssignments';
@@ -151,7 +151,7 @@ export const LoadingState: Story = {
 export const EmptyState: Story = {
   args: {
     groups: [],
-    totalCount: 0,
+    // Omit totalCount — mirrors WorkspaceDetail / OrganizationManagement; regression for indeterminate pagination when empty
     isLoading: false,
     ouiaId: 'role-assignments-table-empty',
   },
@@ -159,6 +159,7 @@ export const EmptyState: Story = {
     const canvas = within(canvasElement);
     await step('Verify empty state', async () => {
       await expect(canvas.findByText('No user group found')).resolves.toBeInTheDocument();
+      expect(queryPagination(canvasElement)).toBeNull();
     });
   },
 };
