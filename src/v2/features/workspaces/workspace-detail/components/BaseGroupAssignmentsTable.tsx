@@ -192,7 +192,7 @@ export const BaseGroupAssignmentsTable: React.FC<BaseGroupAssignmentsTableProps>
         columnConfig={columnConfig}
         sortableColumns={sortableColumns}
         data={isLoading ? undefined : filteredGroups}
-        totalCount={tableState.filters.name ? filteredGroups.length : totalCount}
+        totalCount={tableState.filters.name ? filteredGroups.length : (totalCount ?? filteredGroups.length)}
         getRowId={(row) => row.id}
         cellRenderers={cellRenderers}
         sort={tableState.sort}
