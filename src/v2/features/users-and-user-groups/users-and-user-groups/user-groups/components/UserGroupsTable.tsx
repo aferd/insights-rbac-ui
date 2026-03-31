@@ -1,8 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { useIntl } from 'react-intl';
 import { ResponsiveAction, ResponsiveActions } from '@patternfly/react-component-groups';
-import { Button } from '@patternfly/react-core/dist/dynamic/components/Button';
-
 // eslint-disable-next-line rbac-local/require-use-table-state -- tableState received as prop from parent container
 import {
   DefaultEmptyStateNoData,
@@ -12,6 +10,7 @@ import {
 } from '../../../../../../shared/components/table-view';
 import { ActionDropdown } from '../../../../../../shared/components/ActionDropdown';
 import type { Group } from '../../../../../../v2/data/queries/groups';
+import { isGroupSelectable } from '../useUserGroups';
 import messages from '../../../../../../Messages';
 import useAppNavigate from '../../../../../../shared/hooks/useAppNavigate';
 import pathnames from '../../../../../utilities/pathnames';
@@ -85,6 +84,8 @@ export const UserGroupsTable: React.FC<UserGroupsTableProps> = ({
     [onRowClick, focusedGroup],
   );
 
+  const deletableSelectedRows = useMemo(() => tableState.selectedRows.filter(isGroupDeletable), [tableState.selectedRows, isGroupDeletable]);
+
   // Toolbar actions (only visible with write permission)
   const toolbarActions = useMemo(
     () =>
@@ -93,9 +94,18 @@ export const UserGroupsTable: React.FC<UserGroupsTableProps> = ({
           <ResponsiveAction ouiaId="add-usergroup-button" isPinned onClick={() => navigate(pathnames['users-and-user-groups-create-group'].link())}>
             {intl.formatMessage(messages.createUserGroup)}
           </ResponsiveAction>
+          {onDeleteGroups && (
+            <ResponsiveAction
+              ouiaId="delete-usergroup-button"
+              isDisabled={deletableSelectedRows.length === 0}
+              onClick={() => onDeleteGroups(deletableSelectedRows)}
+            >
+              {intl.formatMessage(messages.usersAndUserGroupsDeleteUserGroupCount, { count: deletableSelectedRows.length })}
+            </ResponsiveAction>
+          )}
         </ResponsiveActions>
       ) : undefined,
-    [intl, navigate, ouiaId, canModifyGroups],
+    [intl, navigate, ouiaId, canModifyGroups, deletableSelectedRows, onDeleteGroups],
   );
 
   return (
@@ -113,7 +123,7 @@ export const UserGroupsTable: React.FC<UserGroupsTableProps> = ({
         cellRenderers={cellRenderers}
         // Selection
         selectable={canModifyGroups}
-        isRowSelectable={() => true}
+        isRowSelectable={isGroupSelectable}
         // Row click
         isRowClickable={() => !!onRowClick}
         onRowClick={handleRowClick}
@@ -146,13 +156,6 @@ export const UserGroupsTable: React.FC<UserGroupsTableProps> = ({
         filterConfig={filterConfig}
         // Toolbar
         toolbarActions={toolbarActions}
-        bulkActions={
-          onDeleteGroups && tableState.selectedRows.length > 0 ? (
-            <Button variant="secondary" isDanger onClick={() => onDeleteGroups(tableState.selectedRows)}>
-              {intl.formatMessage(messages.usersAndUserGroupsDeleteUserGroup)} ({tableState.selectedRows.length})
-            </Button>
-          ) : undefined
-        }
         // Empty states
         emptyStateNoData={
           <DefaultEmptyStateNoData

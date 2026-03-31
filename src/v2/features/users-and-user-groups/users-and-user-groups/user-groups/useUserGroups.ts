@@ -8,6 +8,9 @@ import { type SortableColumnId, columns as userGroupsColumns } from './component
 // Re-export the Group type for use in components
 export type { Group };
 
+/** Groups with platform_default or admin_default cannot be selected for bulk actions. */
+export const isGroupSelectable = (group: Group): boolean => !group.platform_default && !group.admin_default;
+
 export interface UserGroupsFilters {
   name: string;
 }
@@ -62,7 +65,8 @@ export const useUserGroups = (options: UseUserGroupsOptions = {}): UseUserGroups
     initialPerPage: defaultSettings.limit,
     initialFilters: { name: '' },
     getRowId: (group) => group.uuid,
-    syncWithUrl: true, // Page-level tables sync with URL
+    isRowSelectable: isGroupSelectable,
+    syncWithUrl: true,
   });
 
   // Use React Query for data fetching - using apiParams from tableState
