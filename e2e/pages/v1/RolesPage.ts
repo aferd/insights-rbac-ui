@@ -6,26 +6,20 @@
  */
 
 import { type Locator, type Page, expect } from '@playwright/test';
-import {
-  clickMenuItem,
-  iamUrl,
-  openDetailPageActionsMenu,
-  openRoleActionsMenu,
-  setupPage,
-  v1,
-  verifySuccessNotification,
-  waitForTableUpdate,
-} from '../../utils';
+import { clickMenuItem, iamUrl, openDetailPageActionsMenu, openRoleActionsMenu, setupPage, v1, verifySuccessNotification } from '../../utils';
 import { fillCreateRoleWizard, fillCreateRoleWizardAsCopy, searchForRole, verifyRoleInTable, verifyRoleNotInTable } from '../../utils/roleHelpers';
 import { E2E_TIMEOUTS } from '../../utils/timeouts';
+import { TableComponent } from '../components/TableComponent';
 
 const ROLES_URL = iamUrl(v1.roles.link());
 
 export class RolesPage {
   readonly page: Page;
+  readonly tableComponent: TableComponent;
 
   constructor(page: Page) {
     this.page = page;
+    this.tableComponent = new TableComponent(page);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -49,11 +43,7 @@ export class RolesPage {
   }
 
   get table(): Locator {
-    return this.page.getByRole('grid');
-  }
-
-  get searchInput(): Locator {
-    return this.page.getByRole('searchbox').or(this.page.getByPlaceholder(/filter|search/i));
+    return this.tableComponent.grid;
   }
 
   get createButton(): Locator {
@@ -73,16 +63,15 @@ export class RolesPage {
   }
 
   async clearSearch(): Promise<void> {
-    await this.searchInput.clear();
-    await waitForTableUpdate(this.page);
+    await this.tableComponent.clearSearch();
   }
 
   getRoleRow(name: string): Locator {
-    return this.table.getByRole('row', { name: new RegExp(name, 'i') });
+    return this.tableComponent.getRow(name);
   }
 
   getRoleLink(name: string): Locator {
-    return this.table.getByRole('link', { name });
+    return this.tableComponent.grid.getByRole('link', { name });
   }
 
   async verifyRoleInTable(name: string): Promise<void> {
@@ -140,12 +129,17 @@ export class RolesPage {
   // CRUD Operations
   // ═══════════════════════════════════════════════════════════════════════════
 
-  async fillCreateWizard(name: string, description: string, workspaceName: string): Promise<void> {
+  async fillCreateWizard(name: string, description: string, workspaceName?: string): Promise<void> {
     await fillCreateRoleWizard(this.page, name, description, workspaceName);
   }
 
-  async fillCreateWizardAsCopy(newRoleName: string, sourceRoleName: string, workspaceName: string, description?: string): Promise<void> {
-    await fillCreateRoleWizardAsCopy(this.page, newRoleName, sourceRoleName, workspaceName, description);
+  async fillCreateWizardAsCopy(
+    newRoleName: string,
+    sourceRoleName?: string,
+    workspaceName?: string,
+    description?: string,
+  ): Promise<{ sourceRoleName: string }> {
+    return fillCreateRoleWizardAsCopy(this.page, newRoleName, sourceRoleName, workspaceName, description);
   }
 
   async fillEditModal(newName: string, newDescription: string): Promise<void> {

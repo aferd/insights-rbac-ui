@@ -11,18 +11,31 @@ import NotificationsProvider from '@redhat-cloud-services/frontend-components-no
 import { useAddNotification } from '@redhat-cloud-services/frontend-components-notifications/hooks';
 import messages from '../src/locales/data.json';
 import { locale } from '../src/locales/locale';
-import { type FeatureFlagsConfig, FeatureFlagsProvider } from './context-providers';
-import { type Environment, StorybookMockProvider } from './contexts/StorybookMockContext';
+import { type FeatureFlagsConfig, FeatureFlagsProvider, useFlag } from './context-providers';
+import { type Environment, StorybookMockProvider, useMockState } from './contexts/StorybookMockContext';
 import { initialize, mswLoader } from 'msw-storybook-addon';
 import { ServiceProvider, createBrowserServices } from '../src/shared/services';
+import type { AddNotificationFn } from '../src/shared/entry/browser';
 import { ApiErrorProvider } from '../src/shared/contexts/ApiErrorContext';
 
 // Wrapper that provides all providers for component stories (non-journey)
-// This must be inside NotificationsProvider to access useAddNotification
-// Includes: ApiErrorProvider → ServiceProvider → QueryClientSetup
+// This must be inside NotificationsProvider, StorybookMockProvider, and FeatureFlagsProvider
+// to access useAddNotification, mock state, and feature flags.
 const ComponentProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const addNotification = useAddNotification();
-  const services = createBrowserServices(addNotification);
+  const addNotification = useAddNotification() as AddNotificationFn;
+  const { environment, userIdentity } = useMockState();
+  const isITLess = useFlag('platform.rbac.itless');
+
+  const services = createBrowserServices({
+    addNotification,
+    getToken: async () => 'mock-token',
+    environment,
+    ssoUrl: 'https://sso.redhat.com',
+    identity: userIdentity
+      ? { org_id: userIdentity.org_id, account_id: userIdentity.internal?.account_id }
+      : { org_id: '12345', account_id: '54321' },
+    isITLess,
+  });
 
   return (
     <ApiErrorProvider>
@@ -98,11 +111,11 @@ const preview: Preview = {
       // Environment mapping - check explicit story parameter first, then chrome.environment
       // Story-level parameters.environment takes precedence over default chrome.environment
       const environment: Environment =
-        parameters.environment === 'staging'
-          ? 'staging'
+        parameters.environment === 'stage'
+          ? 'stage'
           : parameters.environment === 'production' || parameters.chrome?.environment === 'prod'
             ? 'production'
-            : 'staging';
+            : 'stage';
 
       // Workspace permissions for Kessel stories (all 5 relations)
       // Check args first (for stories with decorators that override permissions via args), then parameters

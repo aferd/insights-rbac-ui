@@ -59,4 +59,14 @@ export class OrganizationManagementPage {
   get organizationId(): Locator {
     return this.page.getByText(/organization id/i);
   }
+
+  get grantAccessButton(): Locator {
+    return this.page.getByRole('button', { name: /grant access/i });
+  }
+
+  get grantAccessWizard(): Locator {
+    // The wizard renders two role=dialog elements (PF modal wrapper + inner wizard).
+    // Target the inner wizard directly by its stable OUIA ID to avoid strict mode violations.
+    return this.page.locator('[data-ouia-component-id="grant-access-wizard"]');
+  }
 }

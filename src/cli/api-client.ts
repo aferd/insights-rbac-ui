@@ -19,7 +19,8 @@ import { PacProxyAgent } from 'pac-proxy-agent';
 import type { Agent } from 'https';
 import chalk from 'chalk';
 import { getApiBaseUrl } from './auth';
-import type { AppServices, NotifyFn } from '../shared/services/types';
+import type { AppServices, Environment, NotifyFn } from '../shared/services/types.js';
+import { getCurrentEnv } from './auth.js';
 
 // Global axios instance for CLI
 let cliApiClient: AxiosInstance | null = null;
@@ -137,7 +138,8 @@ export function initializeApiClient(token: string): AxiosInstance {
             console.error('      Your account may lack required permissions.');
             break;
           case 404:
-            console.error('\n[CLI] ❌ Resource not found.');
+            // Callers handle 404 themselves (e.g. purge-by-uuid skips already-deleted roles).
+            // No global log — it would appear before the caller's catch and look like an error.
             break;
           case 500:
             console.error('\n[CLI] ❌ Server error. The API may be temporarily unavailable.');
@@ -219,6 +221,21 @@ const cliNotify: NotifyFn = (variant, title, description) => {
 };
 
 /**
+ * Map CLI environment names to AppServices Environment type.
+ */
+function resolveEnvironment(): Environment {
+  const env = getCurrentEnv();
+  switch (env) {
+    case 'prod':
+      return 'production';
+    case 'stage':
+    case 'local':
+    default:
+      return 'stage';
+  }
+}
+
+/**
  * Create CLI-specific services with the provided axios instance.
  *
  * @param axiosInstance - Axios instance from initializeApiClient()
@@ -228,5 +245,10 @@ export function createCliServices(axiosInstance: AxiosInstance): AppServices {
   return {
     axios: axiosInstance,
     notify: cliNotify,
+    getToken: async () => currentToken ?? '',
+    environment: resolveEnvironment(),
+    ssoUrl: '',
+    identity: undefined,
+    isITLess: false,
   };
 }

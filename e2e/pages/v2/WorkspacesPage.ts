@@ -7,6 +7,7 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 import { iamUrl, setupPage, v2, waitForTableUpdate } from '../../utils';
 import { ManagedWorkspaceSelectorComponent } from '../components/ManagedWorkspaceSelectorComponent';
+import { TableComponent } from '../components/TableComponent';
 import { E2E_TIMEOUTS } from '../../utils/timeouts';
 
 const WORKSPACES_URL = iamUrl(v2.accessManagementWorkspaces.link());
@@ -14,10 +15,12 @@ const WORKSPACES_URL = iamUrl(v2.accessManagementWorkspaces.link());
 export class WorkspacesPage {
   readonly page: Page;
   readonly workspaceSelector: ManagedWorkspaceSelectorComponent;
+  readonly tableComponent: TableComponent;
 
   constructor(page: Page) {
     this.page = page;
     this.workspaceSelector = new ManagedWorkspaceSelectorComponent(page);
+    this.tableComponent = new TableComponent(page);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -63,7 +66,7 @@ export class WorkspacesPage {
   // ═══════════════════════════════════════════════════════════════════════════
 
   async searchFor(name: string): Promise<void> {
-    await this.searchInput.fill(name);
+    await this.tableComponent.search(name);
     await waitForTableUpdate(this.page, { timeout: E2E_TIMEOUTS.SLOW_DATA });
   }
 
@@ -119,48 +122,60 @@ export class WorkspacesPage {
       timeout: E2E_TIMEOUTS.DIALOG_CONTENT,
     });
 
-    // Select parent workspace — click the dropdown, expand tree, pick, confirm
-    if (parentWorkspace) {
-      await this.page.getByRole('button', { name: /select workspaces/i }).click();
-
-      const tree = this.page.getByRole('tree');
-      await expect(tree.getByRole('treeitem').first()).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
-
-      const targetItem = tree.getByRole('treeitem').filter({ hasText: parentWorkspace }).first();
-      if (!(await targetItem.isVisible().catch(() => false))) {
-        const rootExpandBtn = tree.getByRole('treeitem').first().getByRole('button').first();
-        await rootExpandBtn.click();
-        await expect(targetItem).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
-      }
-
-      // Click the workspace name to select it
-      await targetItem.getByRole('button', { name: parentWorkspace }).last().click();
-
-      // Confirm the selection
-      const confirmBtn = this.page.getByTestId('workspace-selector-confirm').or(this.page.getByRole('button', { name: /select workspace/i }));
-      await confirmBtn.click();
-    }
-
-    // Fill name and description
+    // Step 1: Details — always the first step. Fill name and description.
     await this.page.getByRole('textbox', { name: /workspace name/i }).fill(name);
     const descInput = this.page.getByRole('textbox', { name: /workspace description/i });
     if (await descInput.isVisible()) {
       await descInput.fill(description);
     }
 
-    // Click Next to proceed to review step, then submit
-    const nextButton = this.page.getByRole('button', { name: /^next$/i });
-    if (await nextButton.isEnabled({ timeout: E2E_TIMEOUTS.BUTTON_STATE }).catch(() => false)) {
+    // Advance past the details step
+    await this.page.getByRole('button', { name: /^next$/i }).click();
+
+    // Step 2 (optional): Select parent workspace.
+    // This step appears when creating from the list page (skipParentStep=false).
+    // It is absent when creating via kebab (parent is pre-selected, skipParentStep=true).
+    //
+    // Detection: Use the step heading (appears immediately on step render) rather than
+    // the tree element (which is hidden behind a spinner while Kessel permissions load).
+    const selectParentHeading = this.page.getByRole('heading', { name: /select parent workspace/i });
+    const isParentStepVisible = await selectParentHeading.isVisible({ timeout: E2E_TIMEOUTS.DIALOG_CONTENT }).catch(() => false);
+    if (isParentStepVisible && parentWorkspace) {
+      // Wait for the tree to finish loading (status='ready' in useWorkspacesWithPermissions).
+      // The tree renders a spinner until Kessel permissions settle, then shows treeitems.
+      const tree = this.page.getByRole('tree');
+      await expect(tree).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
+      await expect(tree.getByRole('treeitem').first()).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
+
+      // Find the target workspace treeitem by its accessible name.
+      // No search filter — avoids race conditions with filtered tree re-renders.
+      const targetItem = tree.getByRole('treeitem', { name: parentWorkspace }).first();
+      await expect(targetItem).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
+
+      // Click the node-text button (the select button, not the expand toggle).
+      // PF6 TreeView with hasSelectableNodes: clicking node-text bubbles to the parent
+      // div's onClick which calls onSelect, updating the DDF form field WORKSPACE_PARENT.
+      // Use .first() because child treeitems' node-text buttons are also descendants of this
+      // treeitem element; the first match is always this treeitem's own button.
+      await targetItem.locator('.pf-v6-c-tree-view__node-text').first().click();
+
+      // Wait for aria-selected="true" to confirm the selection registered in the DDF form.
+      // This is more reliable than waiting for Next to be enabled, as it confirms the
+      // full round-trip: click → onSelect → handleSelect → formOptions.change → re-render.
+      await expect(targetItem).toHaveAttribute('aria-selected', 'true', { timeout: E2E_TIMEOUTS.SLOW_DATA });
+
+      // Advance to the review step
+      const nextButton = this.page.getByRole('button', { name: /^next$/i });
+      await expect(nextButton).toBeEnabled({ timeout: E2E_TIMEOUTS.SLOW_DATA });
       await nextButton.click();
-      // Wait for review step — use the heading to avoid matching "Preview mode" banner text
-      await expect(this.page.getByRole('heading', { name: /review new workspace/i })).toBeVisible({
-        timeout: E2E_TIMEOUTS.DIALOG_CONTENT,
-      });
-      // Submit — use exact match to avoid hitting "Create workspace" button on the main page
-      await this.page.getByRole('button', { name: 'Submit' }).click();
-    } else {
-      await this.page.getByRole('button', { name: /^submit$/i }).click();
     }
+
+    // Wait for review step — use SLOW_DATA to tolerate any DDF/React render delay
+    await expect(this.page.getByRole('heading', { name: /review new workspace/i })).toBeVisible({
+      timeout: E2E_TIMEOUTS.SLOW_DATA,
+    });
+    // Submit — use exact match to avoid hitting "Create workspace" button on the main page
+    await this.page.getByRole('button', { name: 'Submit' }).click();
 
     // Wait for the modal to close (success) — workspace creation API can be slow on stage
     await expect(this.page.getByRole('heading', { name: /create new workspace/i })).not.toBeVisible({
@@ -168,21 +183,52 @@ export class WorkspacesPage {
     });
   }
 
-  async fillEditForm(newDescription: string): Promise<void> {
-    // Wait for the edit modal to appear with the Name field
-    const nameInput = this.page.getByRole('textbox', { name: /name/i });
-    await expect(nameInput).toBeVisible({ timeout: E2E_TIMEOUTS.TABLE_DATA });
+  async fillEditForm(newDescription: string, newName?: string): Promise<void> {
+    // Wait for the edit modal to fully render (workspace data + permissions loading).
+    // Scope to the dialog to avoid matching other page elements.
+    // Use the HTML `name` attribute (set by DDF) rather than accessible name — the Name
+    // TextInput's label association isn't reflected as an ARIA accessible name.
+    const dialog = this.page.getByRole('dialog', { name: /edit workspace/i });
+    await expect(dialog).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
 
-    // Update the description
-    const descInput = this.page.getByRole('textbox', { name: /description/i });
-    if (await descInput.isVisible()) {
-      await descInput.click();
-      await descInput.selectText();
+    const nameInput = dialog.locator('[name="name"]');
+    await expect(nameInput).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
+
+    if (newName) {
+      await nameInput.click();
+      await nameInput.selectText();
       await this.page.keyboard.press('Backspace');
-      await descInput.fill(newDescription);
+      await nameInput.fill(newName);
     }
 
-    await this.page.getByRole('button', { name: /save/i }).click();
+    // Wait for description field to render — the modal loads async
+    const descInput = dialog.locator('[name="description"]');
+    await expect(descInput).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
+    await descInput.click();
+    await descInput.selectText();
+    await this.page.keyboard.press('Backspace');
+    await descInput.fill(newDescription);
+
+    // Wait for the Save button to become enabled (form is no longer pristine)
+    const saveButton = this.page.getByRole('button', { name: /save/i });
+    await expect(saveButton).toBeEnabled({ timeout: E2E_TIMEOUTS.BUTTON_STATE });
+    await saveButton.click();
+  }
+
+  async openEditAccessModal(groupName: string): Promise<void> {
+    const row = this.currentRoleAssignmentsTable.getByRole('row').filter({ hasText: groupName });
+    await row.getByRole('button', { name: /actions|kebab/i }).click();
+    await this.page.waitForTimeout(E2E_TIMEOUTS.QUICK_SETTLE);
+    await this.page.getByRole('menuitem', { name: /edit access/i }).click();
+    await expect(this.page.getByRole('dialog').getByRole('heading', { name: /edit access/i })).toBeVisible({
+      timeout: E2E_TIMEOUTS.DIALOG_CONTENT,
+    });
+  }
+
+  async closeEditAccessModal(): Promise<void> {
+    const dialog = this.page.getByRole('dialog');
+    await dialog.getByRole('button', { name: /cancel/i }).click();
+    await expect(dialog).not.toBeVisible({ timeout: E2E_TIMEOUTS.DIALOG_CONTENT });
   }
 
   async confirmDelete(): Promise<void> {
@@ -227,15 +273,27 @@ export class WorkspacesPage {
   }
 
   get inheritedRoleAssignmentsSubTab(): Locator {
-    return this.page.getByRole('tab', { name: /roles assigned in parent/i });
+    // Tab title includes a Popover icon which may alter the accessible name
+    return this.page.getByRole('tab', { name: /parent workspaces/i });
   }
 
   get currentRoleAssignmentsTable(): Locator {
-    return this.page.locator('[data-ouia-component-id="current-role-assignments-table"]');
+    // Staging (master) renders "current-role-assignments-table-table" — ouiaId prop already
+    // had -table, then BaseGroupAssignmentsTable appends another. Our branch corrected the
+    // prop to drop the suffix, so the final id is "current-role-assignments-table".
+    // Both the wrapper div and inner <table> share the same OUIA id, so .first() picks the div.
+    return this.page
+      .locator('[data-ouia-component-id="current-role-assignments-table"]')
+      .or(this.page.locator('[data-ouia-component-id="current-role-assignments-table-table"]'))
+      .first();
   }
 
   get parentRoleAssignmentsTable(): Locator {
-    return this.page.locator('[data-ouia-component-id="parent-role-assignments-table"]');
+    // Same reasoning as currentRoleAssignmentsTable above.
+    return this.page
+      .locator('[data-ouia-component-id="parent-role-assignments-table"]')
+      .or(this.page.locator('[data-ouia-component-id="parent-role-assignments-table-table"]'))
+      .first();
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -254,16 +312,30 @@ export class WorkspacesPage {
   }
 
   async fillGrantAccessWizard(options: { groups: string[]; roles: string[] }): Promise<void> {
-    // Step 1: Select user groups
+    const wizard = this.grantAccessWizard;
+    const searchInput = wizard
+      .getByRole('searchbox')
+      .or(wizard.getByPlaceholder(/filter|search/i))
+      .first();
+
+    // Step 1: Select user groups — search for each to avoid pagination issues
     for (const groupName of options.groups) {
-      const row = this.grantAccessWizard.getByRole('row').filter({ hasText: groupName });
+      if (await searchInput.isVisible({ timeout: E2E_TIMEOUTS.QUICK_SETTLE }).catch(() => false)) {
+        await searchInput.fill(groupName);
+        await waitForTableUpdate(this.page, { timeout: E2E_TIMEOUTS.TABLE_DATA });
+      }
+      const row = wizard.getByRole('row').filter({ hasText: groupName });
       await row.getByRole('checkbox').check();
     }
     await this.page.getByRole('button', { name: /^next$/i }).click();
 
-    // Step 2: Select roles
+    // Step 2: Select roles — search for each to avoid pagination issues
     for (const roleName of options.roles) {
-      const row = this.grantAccessWizard.getByRole('row').filter({ hasText: roleName });
+      if (await searchInput.isVisible({ timeout: E2E_TIMEOUTS.QUICK_SETTLE }).catch(() => false)) {
+        await searchInput.fill(roleName);
+        await waitForTableUpdate(this.page, { timeout: E2E_TIMEOUTS.TABLE_DATA });
+      }
+      const row = wizard.getByRole('row').filter({ hasText: roleName });
       await row.getByRole('checkbox').check();
     }
     await this.page.getByRole('button', { name: /^next$/i }).click();
@@ -282,15 +354,18 @@ export class WorkspacesPage {
   // Group Details Drawer
   // ═══════════════════════════════════════════════════════════════════════════
 
-  async openGroupDrawer(groupName: string): Promise<void> {
-    const table = this.currentRoleAssignmentsTable.or(this.parentRoleAssignmentsTable);
-    await table.getByRole('row').filter({ hasText: groupName }).click();
-    await expect(this.page.getByRole('tab', { name: /members/i })).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
+  async openGroupDrawer(groupName: string, table?: Locator): Promise<void> {
+    const scope = table ?? this.currentRoleAssignmentsTable;
+    const row = scope.getByRole('row').filter({ hasText: groupName });
+    await expect(row).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
+    await row.click();
+    // Wait for the drawer slide-in animation and data load
+    await expect(this.page.getByRole('tab', { name: /^users$/i })).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
   }
 
   async closeGroupDrawer(): Promise<void> {
     await this.page.getByRole('button', { name: /close drawer panel/i }).click();
-    await expect(this.page.getByRole('tab', { name: /members/i })).not.toBeVisible({ timeout: E2E_TIMEOUTS.DIALOG_CONTENT });
+    await expect(this.page.getByRole('tab', { name: /^users$/i })).not.toBeVisible({ timeout: E2E_TIMEOUTS.DIALOG_CONTENT });
   }
 
   async openRoleBindingActions(groupName: string): Promise<void> {
@@ -336,8 +411,14 @@ export class WorkspacesPage {
    */
   async switchToInheritedTab(): Promise<void> {
     await this.roleAssignmentsTab.click();
+    // Wait for sub-tabs to render after the main tab switch
+    await expect(this.inheritedRoleAssignmentsSubTab).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
     await this.inheritedRoleAssignmentsSubTab.click();
     await expect(this.inheritedRoleAssignmentsSubTab).toHaveAttribute('aria-selected', 'true', {
+      timeout: E2E_TIMEOUTS.SLOW_DATA,
+    });
+    // The inherited table is conditionally rendered — wait for it to mount and load data
+    await expect(this.parentRoleAssignmentsTable).toBeVisible({
       timeout: E2E_TIMEOUTS.SLOW_DATA,
     });
     await waitForTableUpdate(this.page, { timeout: E2E_TIMEOUTS.SLOW_DATA });
@@ -370,10 +451,7 @@ export class WorkspacesPage {
    */
   async openRowKebab(workspaceName: string): Promise<void> {
     await this.expandTreeNodes();
-    const row = this.table
-      .getByRole('row')
-      .filter({ has: this.table.getByText(workspaceName) })
-      .first();
+    const row = this.page.getByRole('treegrid').getByRole('row').filter({ hasText: workspaceName }).first();
     await expect(row).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
     const kebab = row.getByRole('button', { name: /actions|kebab toggle/i });
     await kebab.click();
@@ -387,24 +465,23 @@ export class WorkspacesPage {
     const modal = this.page.locator('[role="dialog"]');
     await expect(modal).toBeVisible({ timeout: E2E_TIMEOUTS.DIALOG_CONTENT });
 
-    // Open parent selector — toggle shows current parent name when selected
-    const selectorToggle = modal.getByTestId('workspace-selector-toggle').or(modal.getByRole('button', { name: /select workspaces/i }));
-    await selectorToggle.click();
-
+    // Tree is always inline — no toggle to open
     const tree = this.page.getByRole('tree');
     await expect(tree.getByRole('treeitem').first()).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
 
-    const targetItem = tree.getByRole('treeitem').filter({ hasText: newParentName }).first();
-    if (!(await targetItem.isVisible().catch(() => false))) {
-      const rootExpandBtn = tree.getByRole('treeitem').first().getByRole('button').first();
-      await rootExpandBtn.click();
-      await expect(targetItem).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
+    // Search for the workspace to isolate it, then click the selection button
+    const searchInput = this.page.getByRole('searchbox', { name: /search workspaces/i });
+    if (await searchInput.isVisible({ timeout: E2E_TIMEOUTS.QUICK_SETTLE }).catch(() => false)) {
+      await searchInput.fill(newParentName);
+      await this.page.waitForTimeout(E2E_TIMEOUTS.QUICK_SETTLE);
     }
 
-    await targetItem.getByRole('button', { name: newParentName }).last().click();
+    const targetItem = tree.getByRole('treeitem', { name: newParentName }).first();
+    await expect(targetItem).toBeVisible({ timeout: E2E_TIMEOUTS.SLOW_DATA });
 
-    const confirmBtn = this.page.getByTestId('workspace-selector-confirm').or(this.page.getByRole('button', { name: /select workspace/i }));
-    await confirmBtn.click();
+    // Use .first() because child treeitems' node-text buttons are also descendants of this
+    // treeitem when the tree is unfiltered; first() always picks the target treeitem's own button.
+    await targetItem.locator('.pf-v6-c-tree-view__node-text').first().click();
 
     await modal.getByRole('button', { name: /^submit$/i }).click();
     await expect(modal).not.toBeVisible({ timeout: E2E_TIMEOUTS.MUTATION_COMPLETE });

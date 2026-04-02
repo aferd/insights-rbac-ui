@@ -1,13 +1,8 @@
 {
   "$schema": "./seed-schema.json",
   "description": "V2 seed data: roles, groups, and workspaces (full Access Management support)",
-  "personas": {
-    "admin": { "username": "rbac-e2e-admin-v2" },
-    "userviewer": { "username": "rbac-e2e-userviewer-v2" },
-    "readonly": { "username": "rbac-e2e-user-v2" }
-  },
   "seededUsers": [
-    { "username": "rbac-e2e-seed-user" }
+    { "username": "iqe_rbac_v2_normal" }
   ],
   "roles": [
     {
@@ -24,7 +19,7 @@
       "display_name": "Child Role",
       "description": "Role for child workspace testing",
       "permissions": [
-        "cost-management:cost_model:read"
+        "vulnerability:report_and_export:read"
       ]
     }
   ],
@@ -32,12 +27,14 @@
     {
       "name": "Seeded Group",
       "description": "Controlled test group for search and view tests",
-      "roles_list": ["Seeded Role"]
+      "roles_list": ["Seeded Role"],
+      "user_list": [{ "username": "iqe_rbac_v2_normal" }]
     },
     {
       "name": "Child Group",
       "description": "Group for child workspace testing",
-      "roles_list": ["Child Role"]
+      "roles_list": ["Child Role"],
+      "user_list": [{ "username": "iqe_rbac_v2_normal" }]
     }
   ],
   "workspaces": [
@@ -62,5 +59,8 @@
       "role": "Child Role",
       "workspace": "Seeded Child Workspace"
     }
+  ],
+  "serviceAccounts": [
+    { "clientId": "iqe-rbac-v2-e2e-service-account" }
   ]
 }

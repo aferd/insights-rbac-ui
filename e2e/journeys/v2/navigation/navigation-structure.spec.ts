@@ -33,7 +33,7 @@
  */
 
 import { expect, test } from '@playwright/test';
-import { AUTH_V2_ORGADMIN, AUTH_V2_RBACADMIN, AUTH_V2_READONLY, AUTH_V2_USERVIEWER, AUTH_V2_WORKSPACEUSER, setupPage } from '../../../utils';
+import { AUTH_V2_ORGADMIN, AUTH_V2_RBACADMIN, AUTH_V2_READONLY, AUTH_V2_USERVIEWER, AUTH_V2_WORKSPACEUSER, iamUrl, v2 } from '../../../utils';
 import { NavigationSidebar } from '../../../pages/v2/NavigationSidebar';
 import { E2E_TIMEOUTS } from '../../../utils/timeouts';
 
@@ -86,11 +86,11 @@ test.describe('OrgAdmin', () => {
       await page.waitForTimeout(E2E_TIMEOUTS.MENU_ANIMATION);
     }
 
-    await expect(navSidebar.getNavLink(NAV_OVERVIEW)).toHaveAttribute('href', /\/overview/);
-    await expect(navSidebar.getNavLink(NAV_MY_ACCESS)).toHaveAttribute('href', /\/my-user-access/);
-    await expect(navSidebar.getNavLink(NAV_USERS_AND_GROUPS)).toHaveAttribute('href', /\/access-management\/users-and-user-groups/);
-    await expect(navSidebar.getNavLink(NAV_ROLES)).toHaveAttribute('href', /\/access-management\/roles/);
-    await expect(navSidebar.getNavLink(NAV_WORKSPACES)).toHaveAttribute('href', /\/access-management\/workspaces/);
+    await expect(navSidebar.getNavLink(NAV_OVERVIEW)).toHaveAttribute('href', iamUrl(v2.overview.link()));
+    await expect(navSidebar.getNavLink(NAV_MY_ACCESS)).toHaveAttribute('href', iamUrl(v2.myAccess.link()));
+    await expect(navSidebar.getNavLink(NAV_USERS_AND_GROUPS)).toHaveAttribute('href', iamUrl(v2.usersAndUserGroups.link()));
+    await expect(navSidebar.getNavLink(NAV_ROLES)).toHaveAttribute('href', iamUrl(v2.accessManagementRoles.link()));
+    await expect(navSidebar.getNavLink(NAV_WORKSPACES)).toHaveAttribute('href', iamUrl(v2.accessManagementWorkspaces.link()));
 
     const orgMgmt = navSidebar.getNavExpandable(NAV_ORGANIZATION_MANAGEMENT);
     const orgExpanded = await orgMgmt.getAttribute('aria-expanded');
@@ -99,7 +99,7 @@ test.describe('OrgAdmin', () => {
       await page.waitForTimeout(E2E_TIMEOUTS.MENU_ANIMATION);
     }
 
-    await expect(navSidebar.getNavLink(NAV_ORGANIZATION_WIDE_ACCESS)).toHaveAttribute('href', /\/organization-management\/organization-wide-access/);
+    await expect(navSidebar.getNavLink(NAV_ORGANIZATION_WIDE_ACCESS)).toHaveAttribute('href', iamUrl(v2.organizationManagement.link()));
   });
 });
 
@@ -139,29 +139,96 @@ test.describe('ReadOnlyUser', () => {
 // RBACADMIN - rbac:: write perms, not org admin; no Organization Management
 // ═══════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Full navigation visibility per persona
+// ═══════════════════════════════════════════════════════════════════════════
+
 test.describe('RbacAdmin', () => {
   test.use({ storageState: AUTH_V2_RBACADMIN });
 
-  test('Non-org admin does not see Organization Management in navigation [RbacAdmin]', async ({ page }) => {
-    // Same assertion as UserViewer - RbacAdmin has RBAC perms but is not org admin
-    await setupPage(page);
+  test('V2 navigation shows correct items [RbacAdmin]', async ({ page }) => {
     const navSidebar = new NavigationSidebar(page);
     await navSidebar.gotoOverview();
-    await expect(navSidebar.getNavLink(NAV_ORGANIZATION_MANAGEMENT)).not.toBeVisible();
+
+    await expect(navSidebar.getNavLink(NAV_MY_ACCESS)).toBeVisible();
+    await expect(navSidebar.getNavLink(NAV_OVERVIEW)).toBeVisible();
+
+    const accessMgmt = navSidebar.getNavExpandable(NAV_ACCESS_MANAGEMENT);
+    await expect(accessMgmt).toBeVisible();
+    const expanded = await accessMgmt.getAttribute('aria-expanded');
+    if (expanded !== 'true') {
+      await accessMgmt.click();
+    }
+
+    await expect(navSidebar.getNavLink(NAV_USERS_AND_GROUPS)).toBeVisible();
+    await expect(navSidebar.getNavLink(NAV_ROLES)).toBeVisible();
+    await expect(navSidebar.getNavLink(NAV_WORKSPACES)).toBeVisible();
+
+    expect(await navSidebar.isNavItemVisible(NAV_ORGANIZATION_MANAGEMENT)).toBe(false);
   });
 });
-
-// ═══════════════════════════════════════════════════════════════════════════
-// WORKSPACEUSER - Non-admin with explicit workspace access
-// ═══════════════════════════════════════════════════════════════════════════
 
 test.describe('WorkspaceUser', () => {
   test.use({ storageState: AUTH_V2_WORKSPACEUSER });
 
-  test('Non-org admin does not see Organization Management in navigation [WorkspaceUser]', async ({ page }) => {
-    await setupPage(page);
+  test('V2 navigation shows correct items [WorkspaceUser]', async ({ page }) => {
     const navSidebar = new NavigationSidebar(page);
     await navSidebar.gotoOverview();
-    await expect(navSidebar.getNavLink(NAV_ORGANIZATION_MANAGEMENT)).not.toBeVisible();
+
+    await expect(navSidebar.getNavLink(NAV_MY_ACCESS)).toBeVisible();
+    await expect(navSidebar.getNavLink(NAV_OVERVIEW)).toBeVisible();
+
+    const accessMgmt = navSidebar.getNavExpandable(NAV_ACCESS_MANAGEMENT);
+    await expect(accessMgmt).toBeVisible();
+    const expanded = await accessMgmt.getAttribute('aria-expanded');
+    if (expanded !== 'true') {
+      await accessMgmt.click();
+    }
+
+    await expect(navSidebar.getNavLink(NAV_USERS_AND_GROUPS)).toBeVisible();
+    await expect(navSidebar.getNavLink(NAV_ROLES)).toBeVisible();
+    await expect(navSidebar.getNavLink(NAV_WORKSPACES)).toBeVisible();
+
+    expect(await navSidebar.isNavItemVisible(NAV_ORGANIZATION_MANAGEMENT)).toBe(false);
+  });
+});
+
+test.describe('UserViewer — Full Nav', () => {
+  test.use({ storageState: AUTH_V2_USERVIEWER });
+
+  test('V2 navigation shows limited items [UserViewer]', async ({ page }) => {
+    const navSidebar = new NavigationSidebar(page);
+    await navSidebar.gotoMyAccess();
+
+    await expect(navSidebar.getNavLink(NAV_MY_ACCESS)).toBeVisible();
+    expect(await navSidebar.isNavItemVisible(NAV_OVERVIEW)).toBe(false);
+
+    const accessMgmt = navSidebar.getNavExpandable(NAV_ACCESS_MANAGEMENT);
+    await expect(accessMgmt).toBeVisible();
+    const expanded = await accessMgmt.getAttribute('aria-expanded');
+    if (expanded !== 'true') {
+      await accessMgmt.click();
+    }
+
+    await expect(navSidebar.getNavLink(NAV_USERS_AND_GROUPS)).toBeVisible();
+    expect(await navSidebar.isNavItemVisible(NAV_ROLES)).toBe(false);
+    // Workspaces is visible to all personas as a gap-stopper for Kessel access checks
+    expect(await navSidebar.isNavItemVisible(NAV_ORGANIZATION_MANAGEMENT)).toBe(false);
+  });
+});
+
+test.describe('ReadOnlyUser — Full Nav', () => {
+  test.use({ storageState: AUTH_V2_READONLY });
+
+  test('V2 navigation shows My Access and Workspaces [ReadOnlyUser]', async ({ page }) => {
+    const navSidebar = new NavigationSidebar(page);
+    await navSidebar.gotoMyAccess();
+
+    await expect(navSidebar.getNavLink(NAV_MY_ACCESS)).toBeVisible();
+    expect(await navSidebar.isNavItemVisible(NAV_OVERVIEW)).toBe(false);
+    // Workspaces sits under Access Management and is visible to all personas (Kessel gap-stopper),
+    // so the Access Management section header is visible for ReadOnly users too
+    expect(await navSidebar.isNavItemVisible(NAV_ACCESS_MANAGEMENT)).toBe(true);
+    expect(await navSidebar.isNavItemVisible(NAV_ORGANIZATION_MANAGEMENT)).toBe(false);
   });
 });
