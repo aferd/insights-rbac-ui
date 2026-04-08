@@ -3200,10 +3200,20 @@ export default defineMessages({
     description: 'Grant access in organization wizard title',
     defaultMessage: 'Grant organization-wide access',
   },
+  grantAccessInOrganizationWithName: {
+    id: 'grantAccessInOrganizationWithName',
+    description: 'Grant access in organization wizard title with organization name',
+    defaultMessage: 'Grant access in {organizationName}',
+  },
   selectUserGroups: {
     id: 'selectUserGroups',
     description: 'Select user groups step title',
     defaultMessage: 'Select user group(s)',
+  },
+  selectUserGroupsContentTitle: {
+    id: 'selectUserGroupsContentTitle',
+    description: 'Select user groups content header title',
+    defaultMessage: 'Select user group(s) you want to grant access to',
   },
   selectRoles: {
     id: 'selectRoles',
@@ -3214,7 +3224,12 @@ export default defineMessages({
     id: 'selectUserGroupsDescription',
     description: 'Select user groups step description',
     defaultMessage:
-      "Select the user group(s) you wish to grant access to. If you don't see the group you wish to select, you must create a new group in Users and Groups.",
+      "Select the user group(s) you wish to grant access to. If you don't see the group you wish to select, you must create a new group in ",
+  },
+  selectUserGroupsDescriptionLinkText: {
+    id: 'selectUserGroupsDescriptionLinkText',
+    description: 'Link text for Users and Groups page in select user groups description',
+    defaultMessage: 'Users and Groups',
   },
   selectRolesDescription: {
     id: 'selectRolesDescription',
