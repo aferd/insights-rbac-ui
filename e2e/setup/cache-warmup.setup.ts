@@ -55,10 +55,17 @@ setup('warm asset cache', async () => {
 
   const baseURL = process.env.E2E_BASE_URL || 'https://console.stage.redhat.com';
   const browser = await chromium.launch();
-  const context = await browser.newContext({
+  const contextOptions: any = {
     storageState: AUTH_FILE,
     ignoreHTTPSErrors: true,
-  });
+  };
+
+  // Optional proxy support via environment variable
+  if (process.env.E2E_PROXY) {
+    contextOptions.proxy = { server: process.env.E2E_PROXY };
+  }
+
+  const context = await browser.newContext(contextOptions);
   const page = await context.newPage();
 
   try {

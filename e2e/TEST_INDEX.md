@@ -175,6 +175,8 @@ Quick reference for where to add tests. Search this file before creating new tes
 
 ## V2 Workspaces
 
+### List & Management
+
 | Scenario | File | Describe Block | Setup Notes |
 |----------|------|----------------|-------------|
 | OrgAdmin creates a workspace | `workspace-management.spec.ts` | `OrgAdmin Lifecycle` (serial) | Use TEST_PREFIX, select parent workspace |
@@ -187,9 +189,40 @@ Quick reference for where to add tests. Search this file before creating new tes
 | OrgAdmin searches for workspace | `workspace-list.spec.ts` | `OrgAdmin` | Use SEEDED_WORKSPACE_NAME |
 | UserViewer views workspaces list | `workspace-list.spec.ts` | `UserViewer` | Read-only access |
 | ReadOnlyUser views workspaces list | `workspace-list.spec.ts` | `ReadOnlyUser` | Read-only access |
+
+### Detail Page
+
+| Scenario | File | Describe Block | Setup Notes |
+|----------|------|----------------|-------------|
 | OrgAdmin views workspace detail | `workspace-detail.spec.ts` | `OrgAdmin` | Use SEEDED_WORKSPACE_NAME |
-| UserViewer views workspace detail | `workspace-detail.spec.ts` | `UserViewer` | Read-only access |
-| ReadOnlyUser views workspace detail | `workspace-detail.spec.ts` | `ReadOnlyUser` | Read-only access |
+| OrgAdmin views roles tab | `workspace-detail.spec.ts` | `OrgAdmin` | Use SEEDED_WORKSPACE_NAME |
+| OrgAdmin views inherited tab | `workspace-detail.spec.ts` | `OrgAdmin` | Use SEEDED_WORKSPACE_NAME |
+| OrgAdmin views assets tab | `workspace-detail.spec.ts` | `OrgAdmin` | Use SEEDED_WORKSPACE_NAME |
+| Actions menu shows expected items | `workspace-detail.spec.ts` | `OrgAdmin` | Verify Edit, Move, Delete, Grant Access |
+| Workspace hierarchy displays full path | `workspace-detail.spec.ts` | `OrgAdmin` | Breadcrumb shows Root → Default → Seeded |
+| Navigate via breadcrumb to parent | `workspace-detail.spec.ts` | `OrgAdmin` | Click parent link, verify navigation |
+| Navigate via breadcrumb to root | `workspace-detail.spec.ts` | `OrgAdmin` | Click root link, verify navigation |
+| Nested workspace shows 4-level hierarchy | `workspace-detail.spec.ts` | `OrgAdmin` | Use SEEDED_CHILD_WORKSPACE_NAME |
+| Walk hierarchy child to root | `workspace-detail.spec.ts` | `OrgAdmin` | Step-by-step navigation through all levels |
+| Actions menu items disabled for Root workspace | `workspace-detail.spec.ts` | `OrgAdmin` | Edit, Move, Delete disabled for protected workspace |
+| Assets tab link URL validation | `workspace-detail.spec.ts` | `OrgAdmin` | Verify href points to inventory with workspace param |
+| UserViewer views workspace detail | `workspace-detail.spec.ts` | `WorkspaceUser` | Read-only access |
+| Actions menu not visible | `workspace-detail.spec.ts` | `WorkspaceUser` | Non-admin cannot see actions |
+| Grant access button not visible | `workspace-detail.spec.ts` | `WorkspaceUser` | Non-admin cannot grant access |
+
+### Role Bindings
+
+| Scenario | File | Describe Block | Setup Notes |
+|----------|------|----------------|-------------|
+| Seeded workspace shows seeded group | `workspace-role-bindings.spec.ts` | `OrgAdmin — Direct role bindings` | Use SEEDED_GROUP_NAME |
+| Child workspace shows child group | `workspace-role-bindings.spec.ts` | `OrgAdmin — Direct role bindings` | Use SEEDED_CHILD_WORKSPACE_NAME |
+| View group details drawer | `workspace-role-bindings.spec.ts` | `OrgAdmin — Direct role bindings` | Open drawer from role assignments |
+| Close group details drawer | `workspace-role-bindings.spec.ts` | `OrgAdmin — Direct role bindings` | Verify drawer closes |
+| Child workspace shows inherited groups | `workspace-role-bindings.spec.ts` | `OrgAdmin — Inherited role bindings` | Use SEEDED_CHILD_WORKSPACE_NAME |
+| Inherited from column shows parent link | `workspace-role-bindings.spec.ts` | `OrgAdmin — Inherited role bindings` | Verify parent workspace name |
+| Inherited group opens drawer | `workspace-role-bindings.spec.ts` | `OrgAdmin — Inherited role bindings` | Drawer shows roles/users tabs |
+| Drawer shows inherited from cell | `workspace-role-bindings.spec.ts` | `OrgAdmin — Inherited role bindings` | Parent workspace in roles table |
+| Direct groups not in inherited tab | `workspace-role-bindings.spec.ts` | `OrgAdmin — Inherited role bindings` | Child group only in direct tab |
 
 ---
 
