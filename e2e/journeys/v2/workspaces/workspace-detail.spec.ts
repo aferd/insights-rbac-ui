@@ -269,7 +269,11 @@ test.describe('Workspace Detail', () => {
 
       const href = await inventoryLink.getAttribute('href');
       expect(href).toContain('/insights/inventory');
-      expect(href).toContain(`workspace=${SEEDED_WORKSPACE_NAME}`);
+
+      // Parse URL to properly check workspace parameter (handles URL encoding)
+      const url = new URL(href!, 'https://console.stage.redhat.com');
+      const workspaceParam = url.searchParams.get('workspace');
+      expect(workspaceParam).toBe(SEEDED_WORKSPACE_NAME);
     });
   });
 
