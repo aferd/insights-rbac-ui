@@ -24,13 +24,7 @@
  */
 
 import { expect, test } from '@playwright/test';
-import {
-  AUTH_V2_ORGADMIN,
-  AUTH_V2_WORKSPACEUSER,
-  getSeededChildWorkspaceName,
-  getSeededWorkspaceData,
-  getSeededWorkspaceName,
-} from '../../../utils';
+import { AUTH_V2_ORGADMIN, AUTH_V2_WORKSPACEUSER, getSeededChildWorkspaceName, getSeededWorkspaceData, getSeededWorkspaceName } from '../../../utils';
 import { E2E_TIMEOUTS } from '../../../utils/timeouts';
 import { WorkspacesPage } from '../../../pages/v2/WorkspacesPage';
 
