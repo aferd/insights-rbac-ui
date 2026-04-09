@@ -28,7 +28,7 @@ export const schemaBuilder = (workspaceName: string, workspaceId?: string, resou
         container: getModalContainer(),
         title:
           resourceType === 'tenant'
-            ? workspaceName && workspaceName !== intl.formatMessage(messages.organizationWideAccessTitle)
+            ? workspaceName
               ? intl.formatMessage(messages.grantAccessInOrganizationWithName, { organizationName: workspaceName })
               : intl.formatMessage(messages.grantAccessInOrganization)
             : intl.formatMessage(messages.grantAccessInWorkspace, { workspaceName }),

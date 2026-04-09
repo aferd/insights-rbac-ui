@@ -1887,12 +1887,8 @@
     "description": "Select user groups content header title"
   },
   "selectUserGroupsDescription": {
-    "defaultMessage": "Select the user group(s) you wish to grant access to. If you don't see the group you wish to select, you must create a new group in ",
+    "defaultMessage": "Select the user group(s) you wish to grant access to. If you don't see the group you wish to select, you must create a new group in <link>Users and Groups</link>.",
     "description": "Select user groups step description"
-  },
-  "selectUserGroupsDescriptionLinkText": {
-    "defaultMessage": "Users and Groups",
-    "description": "Link text for Users and Groups page in select user groups description"
   },
   "selectUsersAndOrServiceAccounts": {
     "defaultMessage": "Select users and/or service accounts",

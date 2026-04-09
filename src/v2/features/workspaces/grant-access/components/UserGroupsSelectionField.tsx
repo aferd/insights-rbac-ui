@@ -43,8 +43,9 @@ const UserGroupsSelectionField: React.FC<UseFieldApiConfig> = (props) => {
           </StackItem>
           <StackItem>
             <Content component="p" className="pf-v6-u-mb-md">
-              {intl.formatMessage(messages.selectUserGroupsDescription)}
-              <AppLink to={pathnames['user-groups'].link()}>{intl.formatMessage(messages.selectUserGroupsDescriptionLinkText)}</AppLink>.
+              {intl.formatMessage(messages.selectUserGroupsDescription, {
+                link: (chunks) => <AppLink to={pathnames['user-groups'].link()}>{chunks}</AppLink>,
+              })}
             </Content>
           </StackItem>
           <StackItem>

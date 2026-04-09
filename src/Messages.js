@@ -3224,12 +3224,7 @@ export default defineMessages({
     id: 'selectUserGroupsDescription',
     description: 'Select user groups step description',
     defaultMessage:
-      "Select the user group(s) you wish to grant access to. If you don't see the group you wish to select, you must create a new group in ",
-  },
-  selectUserGroupsDescriptionLinkText: {
-    id: 'selectUserGroupsDescriptionLinkText',
-    description: 'Link text for Users and Groups page in select user groups description',
-    defaultMessage: 'Users and Groups',
+      "Select the user group(s) you wish to grant access to. If you don't see the group you wish to select, you must create a new group in <link>Users and Groups</link>.",
   },
   selectRolesDescription: {
     id: 'selectRolesDescription',
