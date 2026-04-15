@@ -25,7 +25,7 @@ import { AUTH_V2_ORGADMIN, AUTH_V2_USERVIEWER, iamUrl, setupPage, v2 } from '../
 import { E2E_TIMEOUTS } from '../../../utils/timeouts';
 
 const overviewUrl = iamUrl(v2.overview.link());
-const iamBaseUrl = '/iam';
+const iamBaseUrl = iamUrl('');
 
 test.describe('Overview', () => {
   test.describe('OrgAdmin', () => {
@@ -76,26 +76,28 @@ test.describe('Overview', () => {
 // will cause them to go red — that's the signal to remove the annotation.
 // ═══════════════════════════════════════════════════════════════════════════
 
+/**
+ * Helper to navigate to /iam base URL and verify it redirects to overview
+ */
+async function navigateToIamAndExpectOverview(page: any) {
+  await setupPage(page);
+  await page.goto(iamBaseUrl, { timeout: E2E_TIMEOUTS.SLOW_DATA });
+  await page.waitForURL(/\/overview/, { timeout: E2E_TIMEOUTS.SETUP_PAGE_LOAD });
+  await expect(page.getByRole('heading', { name: /user access/i, level: 1 }).first()).toBeVisible({ timeout: E2E_TIMEOUTS.DETAIL_CONTENT });
+}
+
 test.describe('Default Navigation', () => {
   test.describe('OrgAdmin', () => {
     test.use({ storageState: AUTH_V2_ORGADMIN });
 
     test('Navigating to /iam redirects to overview page [OrgAdmin]', async ({ page }) => {
       test.fail(true, 'Routing bug: catch-all route redirects to /my-access instead of /overview');
-      await setupPage(page);
-      await page.goto(iamBaseUrl, { timeout: E2E_TIMEOUTS.SLOW_DATA });
-      await page.waitForURL(/\/overview/, { timeout: E2E_TIMEOUTS.SETUP_PAGE_LOAD });
-      await expect(page.getByRole('heading', { name: /user access/i, level: 1 }).first()).toBeVisible({ timeout: E2E_TIMEOUTS.DETAIL_CONTENT });
+      await navigateToIamAndExpectOverview(page);
     });
 
     test('Overview page is accessible as default landing page [OrgAdmin]', async ({ page }) => {
       test.fail(true, 'Routing bug: catch-all route redirects to /my-access instead of /overview');
-      await setupPage(page);
-      await expect(async () => {
-        await page.goto(iamBaseUrl, { timeout: E2E_TIMEOUTS.SLOW_DATA });
-        const url = page.url();
-        expect(url).toContain('/overview');
-      }).toPass({ timeout: E2E_TIMEOUTS.SETUP_PAGE_LOAD, intervals: [1_000, 2_000, 5_000] });
+      await navigateToIamAndExpectOverview(page);
     });
   });
 });
