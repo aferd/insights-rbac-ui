@@ -20,7 +20,7 @@
  * @dependencies UTILS: setupPage
  */
 
-import { expect, test } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 import { AUTH_V2_ORGADMIN, AUTH_V2_USERVIEWER, iamUrl, setupPage, v2 } from '../../../utils';
 import { E2E_TIMEOUTS } from '../../../utils/timeouts';
 
@@ -79,7 +79,7 @@ test.describe('Overview', () => {
 /**
  * Helper to navigate to /iam base URL and verify it redirects to overview
  */
-async function navigateToIamAndExpectOverview(page: any) {
+async function navigateToIamAndExpectOverview(page: Page) {
   await setupPage(page);
   await page.goto(iamBaseUrl, { timeout: E2E_TIMEOUTS.SLOW_DATA });
   await page.waitForURL(/\/overview/, { timeout: E2E_TIMEOUTS.SETUP_PAGE_LOAD });
