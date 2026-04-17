@@ -175,7 +175,12 @@ export const DeleteActionEnabled: Story = {
       await userEvent.click(actionsButton);
 
       const deleteItem = await within(document.body).findByText('Delete workspace');
-      await expect(deleteItem.closest('button')).not.toHaveAttribute('disabled');
+      await waitFor(
+        async () => {
+          await expect(deleteItem.closest('button')).not.toHaveAttribute('disabled');
+        },
+        { timeout: 5000 },
+      );
     });
   },
 };
