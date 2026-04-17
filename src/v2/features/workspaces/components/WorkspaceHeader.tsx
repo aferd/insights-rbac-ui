@@ -26,9 +26,17 @@ export interface WorkspaceHeaderProps {
   workspaceHierarchy: WorkspaceHierarchyItem[];
   permissions?: WorkspacePermissions;
   actionCallbacks: WorkspaceActionCallbacks;
+  hasChildren?: boolean;
 }
 
-export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({ workspace, isLoading, workspaceHierarchy, permissions, actionCallbacks }) => {
+export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({
+  workspace,
+  isLoading,
+  workspaceHierarchy,
+  permissions,
+  actionCallbacks,
+  hasChildren = false,
+}) => {
   const intl = useIntl();
   const [searchParams] = useSearchParams();
 
@@ -40,6 +48,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({ workspace, isL
     workspace: workspace ?? ({ id: '', name: '' } as WorkspacesWorkspace),
     permissions,
     callbacks: actionCallbacks,
+    hasChildren,
   });
 
   const pageBreadcrumbs = useMemo(

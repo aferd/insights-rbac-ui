@@ -28,6 +28,7 @@ export interface WorkspaceDetailLayoutProps {
   isLoading: boolean;
   status: WorkspacesStatus;
   enableRoles: boolean;
+  hasChildren?: boolean;
   children: React.ReactNode;
 }
 
@@ -40,6 +41,7 @@ export const WorkspaceDetailLayout: React.FC<WorkspaceDetailLayoutProps> = ({
   isLoading,
   status,
   enableRoles,
+  hasChildren = false,
   children,
 }) => {
   const intl = useIntl();
@@ -90,6 +92,7 @@ export const WorkspaceDetailLayout: React.FC<WorkspaceDetailLayoutProps> = ({
         workspaceHierarchy={workspaceHierarchy}
         permissions={permissions}
         actionCallbacks={actionCallbacks}
+        hasChildren={hasChildren}
       />
       <Divider />
       <Tabs

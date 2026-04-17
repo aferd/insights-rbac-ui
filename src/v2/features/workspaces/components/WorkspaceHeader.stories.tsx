@@ -387,3 +387,67 @@ export const WithoutChildContext: Story = {
     await expect(alert).not.toBeInTheDocument();
   },
 };
+
+/**
+ * When hasChildren is true, the "Delete workspace" action should be disabled.
+ * Only leaf workspaces (no children) can be deleted.
+ */
+export const DeleteDisabledWithChildren: Story = {
+  args: {
+    workspace: mockWorkspace,
+    isLoading: false,
+    workspaceHierarchy: mockSingleWorkspaceHierarchy,
+    permissions: { view: true, edit: true, delete: true, create: true, move: true },
+    actionCallbacks: NOOP_CALLBACKS,
+    hasChildren: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Workspace with children — delete action is disabled even when the user has delete permission.',
+      },
+    },
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    await step('Open actions and verify delete is disabled', async () => {
+      const actionsButton = await canvas.findByRole('button', { name: /actions/i });
+      await userEvent.click(actionsButton);
+      const deleteItem = await canvas.findByText('Delete workspace');
+      const menuItem = deleteItem.closest('[role="menuitem"]');
+      await expect(menuItem).toHaveAttribute('aria-disabled', 'true');
+    });
+  },
+};
+
+/**
+ * When hasChildren is false (leaf workspace), the "Delete workspace" action
+ * should be enabled if the user has delete permission.
+ */
+export const DeleteEnabledLeafWorkspace: Story = {
+  args: {
+    workspace: mockChildWorkspace,
+    isLoading: false,
+    workspaceHierarchy: mockHierarchy,
+    permissions: { view: true, edit: true, delete: true, create: true, move: true },
+    actionCallbacks: NOOP_CALLBACKS,
+    hasChildren: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: 'Leaf workspace (no children) — delete action is enabled when the user has delete permission.',
+      },
+    },
+  },
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement);
+    await step('Open actions and verify delete is enabled', async () => {
+      const actionsButton = await canvas.findByRole('button', { name: /actions/i });
+      await userEvent.click(actionsButton);
+      const deleteItem = await canvas.findByText('Delete workspace');
+      const menuItem = deleteItem.closest('[role="menuitem"]');
+      await expect(menuItem).not.toHaveAttribute('aria-disabled', 'true');
+    });
+  },
+};

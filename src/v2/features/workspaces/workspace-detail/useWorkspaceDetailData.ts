@@ -25,6 +25,7 @@ export interface WorkspaceDetailData {
   permissions: typeof EMPTY_PERMISSIONS;
   isLoading: boolean;
   status: WorkspacesStatus;
+  hasChildren: boolean;
 }
 
 /**
@@ -43,8 +44,10 @@ export function useWorkspaceDetailData(): WorkspaceDetailData {
     [workspaces, workspaceId],
   );
 
+  const hasChildren = useMemo(() => workspaces.some((ws) => ws.parent_id === workspaceId), [workspaces, workspaceId]);
+
   const permissions = workspace?.permissions ?? EMPTY_PERMISSIONS;
   const isLoading = status === 'loading';
 
-  return { workspaceId, workspace, workspaceHierarchy, permissions, isLoading, status };
+  return { workspaceId, workspace, workspaceHierarchy, permissions, isLoading, status, hasChildren };
 }

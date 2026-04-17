@@ -19,7 +19,7 @@ interface DirectRolesTabProps {
 
 export const DirectRolesTab: React.FC<DirectRolesTabProps> = ({ groupId }) => {
   const intl = useIntl();
-  const { workspaceId, workspace, workspaceHierarchy, permissions, isLoading, status } = useWorkspaceDetailData();
+  const { workspaceId, workspace, workspaceHierarchy, permissions, isLoading, status, hasChildren } = useWorkspaceDetailData();
   const rbAccess = useRoleBindingsAccess(workspaceId);
   const enableRoles = useWorkspacesFlag('m3');
   const navigate = useAppNavigate();
@@ -66,6 +66,7 @@ export const DirectRolesTab: React.FC<DirectRolesTabProps> = ({ groupId }) => {
       isLoading={isLoading}
       status={status}
       enableRoles={enableRoles}
+      hasChildren={hasChildren}
     >
       {roleBindingDenied ? (
         <UnauthorizedAccess
