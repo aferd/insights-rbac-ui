@@ -9,6 +9,7 @@ import type { WorkspacesWorkspace } from '../../../data/queries/workspaces';
 import type { WorkspaceActionCallbacks } from './useWorkspaceActionItems';
 import messages from '../../../../locales/data.json';
 import { locale } from '../../../../locales/locale';
+import { workspacesHandlers } from '../../../data/mocks/workspaces.handlers';
 
 const NOOP_CALLBACKS: WorkspaceActionCallbacks = {
   onEdit: () => {},
@@ -68,6 +69,9 @@ const meta: Meta<typeof WorkspaceHeader> = {
   tags: ['autodocs'],
   decorators: [withProviders],
   parameters: {
+    msw: {
+      handlers: [...workspacesHandlers([mockWorkspace, mockChildWorkspace])],
+    },
     docs: {
       description: {
         component: `
@@ -394,7 +398,7 @@ export const WithoutChildContext: Story = {
  */
 export const DeleteDisabledWithChildren: Story = {
   args: {
-    workspace: { ...mockWorkspace, children: [mockChildWorkspace] },
+    workspace: mockWorkspace,
     isLoading: false,
     workspaceHierarchy: mockSingleWorkspaceHierarchy,
     permissions: { view: true, edit: true, delete: true, create: true, move: true },
@@ -403,7 +407,8 @@ export const DeleteDisabledWithChildren: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Workspace with children — delete action is disabled even when the user has delete permission.',
+        story:
+          'Workspace with children — delete action is disabled even when the user has delete permission. The hook internally queries the workspace list and detects that mockChildWorkspace has parent_id matching this workspace.',
       },
     },
   },
@@ -425,7 +430,7 @@ export const DeleteDisabledWithChildren: Story = {
  */
 export const DeleteEnabledLeafWorkspace: Story = {
   args: {
-    workspace: { ...mockChildWorkspace, children: [] },
+    workspace: mockChildWorkspace,
     isLoading: false,
     workspaceHierarchy: mockHierarchy,
     permissions: { view: true, edit: true, delete: true, create: true, move: true },
@@ -434,7 +439,8 @@ export const DeleteEnabledLeafWorkspace: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Leaf workspace (no children) — delete action is enabled when the user has delete permission.',
+        story:
+          'Leaf workspace (no children) — delete action is enabled when the user has delete permission. The hook queries the workspace list and finds no workspace with parent_id matching this workspace.',
       },
     },
   },

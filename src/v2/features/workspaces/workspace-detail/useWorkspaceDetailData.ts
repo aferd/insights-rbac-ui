@@ -20,7 +20,7 @@ function buildWorkspaceHierarchy(allWorkspaces: WorkspaceWithPermissions[], targ
 
 export interface WorkspaceDetailData {
   workspaceId: string;
-  workspace: (WorkspaceWithPermissions & { children: WorkspaceWithPermissions[] }) | null;
+  workspace: WorkspaceWithPermissions | null;
   workspaceHierarchy: WorkspaceHierarchyItem[];
   permissions: typeof EMPTY_PERMISSIONS;
   isLoading: boolean;
@@ -36,12 +36,7 @@ export function useWorkspaceDetailData(): WorkspaceDetailData {
   const { workspaceId = '' } = useParams<{ workspaceId: string }>();
   const { workspaces, status } = useWorkspacesWithPermissions();
 
-  const workspace = useMemo(() => {
-    const found = workspaces.find((ws) => ws.id === workspaceId) ?? null;
-    if (!found) return null;
-    const children = workspaces.filter((ws) => ws.parent_id === workspaceId);
-    return { ...found, children };
-  }, [workspaces, workspaceId]);
+  const workspace = useMemo<WorkspaceWithPermissions | null>(() => workspaces.find((ws) => ws.id === workspaceId) ?? null, [workspaces, workspaceId]);
 
   const workspaceHierarchy = useMemo(
     () => (workspaces.length > 0 && workspaceId ? buildWorkspaceHierarchy(workspaces, workspaceId) : []),

@@ -21,7 +21,7 @@ export interface WorkspaceHierarchyItem {
 }
 
 export interface WorkspaceHeaderProps {
-  workspace: (WorkspacesWorkspace & { children?: readonly unknown[] }) | null;
+  workspace: WorkspacesWorkspace | null;
   isLoading: boolean;
   workspaceHierarchy: WorkspaceHierarchyItem[];
   permissions?: WorkspacePermissions;
@@ -37,7 +37,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({ workspace, isL
   const showChildContextAlert = fromChildId && fromChildName;
 
   const actionItems = useWorkspaceActionItems({
-    workspace: workspace ?? ({ id: '', name: '' } as WorkspacesWorkspace),
+    workspaceId: workspace?.id ?? '',
     permissions,
     callbacks: actionCallbacks,
   });

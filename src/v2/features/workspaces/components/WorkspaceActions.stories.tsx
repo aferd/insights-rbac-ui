@@ -6,6 +6,7 @@ import { type WorkspaceActionCallbacks, useWorkspaceActionItems } from './useWor
 import { BrowserRouter } from 'react-router-dom';
 import { IntlProvider } from 'react-intl';
 import type { WorkspacePermissions, WorkspacesWorkspace } from '../../../data/queries/workspaces';
+import { workspacesHandlers } from '../../../data/mocks/workspaces.handlers';
 
 const mockWorkspace: WorkspacesWorkspace = {
   id: 'workspace-1',
@@ -43,12 +44,12 @@ const NOOP_CALLBACKS: WorkspaceActionCallbacks = {
  * This lets stories specify workspace/permissions/callbacks props instead of raw items.
  */
 const WorkspaceActionsWithHook: React.FC<{
-  workspace: WorkspacesWorkspace & { children?: WorkspacesWorkspace[] };
+  workspace: WorkspacesWorkspace;
   permissions?: WorkspacePermissions;
   callbacks?: WorkspaceActionCallbacks;
   isDisabled?: boolean;
 }> = ({ workspace, permissions, callbacks = NOOP_CALLBACKS, isDisabled }) => {
-  const items = useWorkspaceActionItems({ workspace, permissions, callbacks });
+  const items = useWorkspaceActionItems({ workspaceId: workspace.id ?? '', permissions, callbacks });
   return <WorkspaceActions items={items} isDisabled={isDisabled} />;
 };
 
@@ -69,6 +70,9 @@ const meta: Meta<typeof WorkspaceActionsWithHook> = {
   tags: ['autodocs'],
   decorators: [withProviders],
   parameters: {
+    msw: {
+      handlers: [...workspacesHandlers([mockWorkspace, mockSubWorkspace])],
+    },
     docs: {
       description: {
         component: `
