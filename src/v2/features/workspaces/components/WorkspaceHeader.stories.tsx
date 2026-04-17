@@ -389,17 +389,16 @@ export const WithoutChildContext: Story = {
 };
 
 /**
- * When hasChildren is true, the "Delete workspace" action should be disabled.
+ * When the workspace has children, the "Delete workspace" action should be disabled.
  * Only leaf workspaces (no children) can be deleted.
  */
 export const DeleteDisabledWithChildren: Story = {
   args: {
-    workspace: mockWorkspace,
+    workspace: { ...mockWorkspace, children: [mockChildWorkspace] },
     isLoading: false,
     workspaceHierarchy: mockSingleWorkspaceHierarchy,
     permissions: { view: true, edit: true, delete: true, create: true, move: true },
     actionCallbacks: NOOP_CALLBACKS,
-    hasChildren: true,
   },
   parameters: {
     docs: {
@@ -421,17 +420,16 @@ export const DeleteDisabledWithChildren: Story = {
 };
 
 /**
- * When hasChildren is false (leaf workspace), the "Delete workspace" action
- * should be enabled if the user has delete permission.
+ * When the workspace has no children (leaf workspace), the "Delete workspace"
+ * action should be enabled if the user has delete permission.
  */
 export const DeleteEnabledLeafWorkspace: Story = {
   args: {
-    workspace: mockChildWorkspace,
+    workspace: { ...mockChildWorkspace, children: [] },
     isLoading: false,
     workspaceHierarchy: mockHierarchy,
     permissions: { view: true, edit: true, delete: true, create: true, move: true },
     actionCallbacks: NOOP_CALLBACKS,
-    hasChildren: false,
   },
   parameters: {
     docs: {

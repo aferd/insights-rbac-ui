@@ -43,13 +43,12 @@ const NOOP_CALLBACKS: WorkspaceActionCallbacks = {
  * This lets stories specify workspace/permissions/callbacks props instead of raw items.
  */
 const WorkspaceActionsWithHook: React.FC<{
-  workspace: WorkspacesWorkspace;
+  workspace: WorkspacesWorkspace & { children?: WorkspacesWorkspace[] };
   permissions?: WorkspacePermissions;
   callbacks?: WorkspaceActionCallbacks;
   isDisabled?: boolean;
-  hasChildren?: boolean;
-}> = ({ workspace, permissions, callbacks = NOOP_CALLBACKS, isDisabled, hasChildren }) => {
-  const items = useWorkspaceActionItems({ workspace, permissions, callbacks, hasChildren });
+}> = ({ workspace, permissions, callbacks = NOOP_CALLBACKS, isDisabled }) => {
+  const items = useWorkspaceActionItems({ workspace, permissions, callbacks });
   return <WorkspaceActions items={items} isDisabled={isDisabled} />;
 };
 

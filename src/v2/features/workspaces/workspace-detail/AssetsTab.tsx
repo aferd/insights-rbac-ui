@@ -5,7 +5,7 @@ import AssetsCards from './components/AssetsCards';
 import { useWorkspaceDetailData } from './useWorkspaceDetailData';
 
 export const AssetsTab: React.FC = () => {
-  const { workspaceId, workspace, workspaceHierarchy, permissions, isLoading, status, hasChildren } = useWorkspaceDetailData();
+  const { workspaceId, workspace, workspaceHierarchy, permissions, isLoading, status } = useWorkspaceDetailData();
   const enableRoles = useWorkspacesFlag('m3');
 
   return (
@@ -18,7 +18,6 @@ export const AssetsTab: React.FC = () => {
       isLoading={isLoading}
       status={status}
       enableRoles={enableRoles}
-      hasChildren={hasChildren}
     >
       <AssetsCards workspaceName={workspace?.name || ''} />
     </WorkspaceDetailLayout>

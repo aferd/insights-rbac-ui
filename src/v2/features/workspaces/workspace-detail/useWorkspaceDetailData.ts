@@ -20,12 +20,11 @@ function buildWorkspaceHierarchy(allWorkspaces: WorkspaceWithPermissions[], targ
 
 export interface WorkspaceDetailData {
   workspaceId: string;
-  workspace: WorkspaceWithPermissions | null;
+  workspace: (WorkspaceWithPermissions & { children: WorkspaceWithPermissions[] }) | null;
   workspaceHierarchy: WorkspaceHierarchyItem[];
   permissions: typeof EMPTY_PERMISSIONS;
   isLoading: boolean;
   status: WorkspacesStatus;
-  hasChildren: boolean;
 }
 
 /**
@@ -37,17 +36,20 @@ export function useWorkspaceDetailData(): WorkspaceDetailData {
   const { workspaceId = '' } = useParams<{ workspaceId: string }>();
   const { workspaces, status } = useWorkspacesWithPermissions();
 
-  const workspace = useMemo<WorkspaceWithPermissions | null>(() => workspaces.find((ws) => ws.id === workspaceId) ?? null, [workspaces, workspaceId]);
+  const workspace = useMemo(() => {
+    const found = workspaces.find((ws) => ws.id === workspaceId) ?? null;
+    if (!found) return null;
+    const children = workspaces.filter((ws) => ws.parent_id === workspaceId);
+    return { ...found, children };
+  }, [workspaces, workspaceId]);
 
   const workspaceHierarchy = useMemo(
     () => (workspaces.length > 0 && workspaceId ? buildWorkspaceHierarchy(workspaces, workspaceId) : []),
     [workspaces, workspaceId],
   );
 
-  const hasChildren = useMemo(() => workspaces.some((ws) => ws.parent_id === workspaceId), [workspaces, workspaceId]);
-
   const permissions = workspace?.permissions ?? EMPTY_PERMISSIONS;
   const isLoading = status === 'loading';
 
-  return { workspaceId, workspace, workspaceHierarchy, permissions, isLoading, status, hasChildren };
+  return { workspaceId, workspace, workspaceHierarchy, permissions, isLoading, status };
 }

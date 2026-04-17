@@ -23,21 +23,16 @@ export interface WorkspaceActionItem {
 }
 
 interface UseWorkspaceActionItemsParams {
-  workspace: WorkspacesWorkspace;
+  workspace: WorkspacesWorkspace & { children?: readonly unknown[] };
   permissions?: WorkspacePermissions;
   callbacks: WorkspaceActionCallbacks;
-  hasChildren?: boolean;
 }
 
-export function useWorkspaceActionItems({
-  workspace: _workspace,
-  permissions,
-  callbacks,
-  hasChildren = false,
-}: UseWorkspaceActionItemsParams): WorkspaceActionItem[] {
+export function useWorkspaceActionItems({ workspace, permissions, callbacks }: UseWorkspaceActionItemsParams): WorkspaceActionItem[] {
   const intl = useIntl();
   const hasM4Flag = useWorkspacesFlag('m4');
   const perms = permissions ?? EMPTY_PERMISSIONS;
+  const hasChildren = Array.isArray(workspace.children) && workspace.children.length > 0;
 
   return useMemo(() => {
     const items: WorkspaceActionItem[] = [];

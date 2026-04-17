@@ -133,7 +133,6 @@ const WorkspaceRowActions: React.FC<{
     workspace,
     permissions,
     callbacks,
-    hasChildren: !!(workspace.children && workspace.children.length > 0),
   });
 
   return (

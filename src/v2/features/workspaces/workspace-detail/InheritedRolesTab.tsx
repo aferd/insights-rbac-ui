@@ -11,7 +11,7 @@ import messages from '../../../../Messages';
 
 export const InheritedRolesTab: React.FC = () => {
   const intl = useIntl();
-  const { workspaceId, workspace, workspaceHierarchy, permissions, isLoading, status, hasChildren } = useWorkspaceDetailData();
+  const { workspaceId, workspace, workspaceHierarchy, permissions, isLoading, status } = useWorkspaceDetailData();
   const rbAccess = useRoleBindingsAccess(workspaceId);
   const enableRoles = useWorkspacesFlag('m3');
 
@@ -33,7 +33,6 @@ export const InheritedRolesTab: React.FC = () => {
       isLoading={isLoading}
       status={status}
       enableRoles={enableRoles}
-      hasChildren={hasChildren}
     >
       {roleBindingDenied ? (
         <UnauthorizedAccess
