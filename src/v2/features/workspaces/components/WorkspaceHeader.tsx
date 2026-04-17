@@ -37,7 +37,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = ({ workspace, isL
   const showChildContextAlert = fromChildId && fromChildName;
 
   const actionItems = useWorkspaceActionItems({
-    workspaceId: workspace?.id ?? '',
+    workspaceId: workspace?.id,
     permissions,
     callbacks: actionCallbacks,
   });

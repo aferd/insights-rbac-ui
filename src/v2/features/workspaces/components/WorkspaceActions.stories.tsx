@@ -49,7 +49,7 @@ const WorkspaceActionsWithHook: React.FC<{
   callbacks?: WorkspaceActionCallbacks;
   isDisabled?: boolean;
 }> = ({ workspace, permissions, callbacks = NOOP_CALLBACKS, isDisabled }) => {
-  const items = useWorkspaceActionItems({ workspaceId: workspace.id ?? '', permissions, callbacks });
+  const items = useWorkspaceActionItems({ workspaceId: workspace.id, permissions, callbacks });
   return <WorkspaceActions items={items} isDisabled={isDisabled} />;
 };
 

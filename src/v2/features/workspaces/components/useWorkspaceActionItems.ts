@@ -23,7 +23,7 @@ export interface WorkspaceActionItem {
 }
 
 interface UseWorkspaceActionItemsParams {
-  workspaceId: string;
+  workspaceId: string | undefined;
   permissions?: WorkspacePermissions;
   callbacks: WorkspaceActionCallbacks;
 }
@@ -35,7 +35,8 @@ export function useWorkspaceActionItems({ workspaceId, permissions, callbacks }:
 
   // Children check is computed internally — callers cannot bypass it.
   // Fail-closed: disable delete when workspace data is unavailable.
-  const { data: workspaceList, isLoading, isError } = useWorkspacesQuery();
+  // Query is disabled when workspaceId is undefined to avoid API calls without a valid ID.
+  const { data: workspaceList, isLoading, isError } = useWorkspacesQuery({}, { enabled: !!workspaceId });
   const allWorkspaces = workspaceList?.data ?? [];
   const hasChildren = isLoading || isError || !workspaceId || allWorkspaces.some((ws) => ws.parent_id === workspaceId);
 
