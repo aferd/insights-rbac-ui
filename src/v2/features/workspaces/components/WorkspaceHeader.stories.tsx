@@ -413,9 +413,9 @@ export const DeleteDisabledWithChildren: Story = {
     await step('Open actions and verify delete is disabled', async () => {
       const actionsButton = await canvas.findByRole('button', { name: /actions/i });
       await userEvent.click(actionsButton);
-      const deleteItem = await canvas.findByText('Delete workspace');
-      const menuItem = deleteItem.closest('[role="menuitem"]');
-      await expect(menuItem).toHaveAttribute('aria-disabled', 'true');
+      const deleteItem = await within(document.body).findByText('Delete workspace');
+      const menuItem = deleteItem.closest('button');
+      await expect(menuItem).toHaveAttribute('disabled');
     });
   },
 };
@@ -445,9 +445,8 @@ export const DeleteEnabledLeafWorkspace: Story = {
     await step('Open actions and verify delete is enabled', async () => {
       const actionsButton = await canvas.findByRole('button', { name: /actions/i });
       await userEvent.click(actionsButton);
-      const deleteItem = await canvas.findByText('Delete workspace');
-      const menuItem = deleteItem.closest('[role="menuitem"]');
-      await expect(menuItem).not.toHaveAttribute('aria-disabled', 'true');
+      const deleteItem = await within(document.body).findByText('Delete workspace');
+      await expect(deleteItem.closest('button')).not.toHaveAttribute('disabled');
     });
   },
 };
