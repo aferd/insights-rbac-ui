@@ -1150,7 +1150,13 @@ const BulkSelectIsRowSelectableTable: React.FC = () => {
       ariaLabel="Bulk select test table"
       ouiaId="BulkSelectTest"
       bulkActions={
-        tableState.selectedRows.length > 0 ? <span data-testid="selected-count">Selected: {tableState.selectedRows.length}</span> : undefined
+        tableState.selectedRows.length > 0 ? (
+          <>
+            <span data-testid="selected-count">Selected: {tableState.selectedRows.length}</span>
+            <span data-testid="selected-ids">{tableState.selectedRows.map((row) => row.id).join(',')}</span>
+            <span data-testid="selected-names">{tableState.selectedRows.map((row) => row.name).join(',')}</span>
+          </>
+        ) : undefined
       }
       {...tableState}
     />
@@ -1182,6 +1188,19 @@ export const BulkSelectRespectsIsRowSelectable: StoryObj<typeof BulkSelectIsRowS
       await waitFor(() => {
         expect(canvas.queryByTestId('selected-count')).toHaveTextContent('Selected: 3');
       });
+
+      // Verify the actual selectedRows contains only non-system rows (by ID and name)
+      const selectedIds = canvas.getByTestId('selected-ids');
+      expect(selectedIds).toHaveTextContent('1,3,5');
+      // Verify system role IDs are NOT in the selection
+      expect(selectedIds.textContent).not.toContain('2');
+      expect(selectedIds.textContent).not.toContain('4');
+
+      const selectedNames = canvas.getByTestId('selected-names');
+      expect(selectedNames).toHaveTextContent('Custom Role A,Custom Role C,Custom Role E');
+      // Verify system roles are NOT in the selection
+      expect(selectedNames.textContent).not.toContain('System Role B');
+      expect(selectedNames.textContent).not.toContain('System Role D');
 
       // All row checkboxes should be checked
       expect(checkboxes[1]).toBeChecked();
