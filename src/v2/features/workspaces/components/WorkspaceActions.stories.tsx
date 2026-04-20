@@ -6,6 +6,7 @@ import { type WorkspaceActionCallbacks, useWorkspaceActionItems } from './useWor
 import { BrowserRouter } from 'react-router-dom';
 import { IntlProvider } from 'react-intl';
 import type { WorkspacePermissions, WorkspacesWorkspace } from '../../../data/queries/workspaces';
+import { workspacesHandlers } from '../../../data/mocks/workspaces.handlers';
 
 const mockWorkspace: WorkspacesWorkspace = {
   id: 'workspace-1',
@@ -47,9 +48,8 @@ const WorkspaceActionsWithHook: React.FC<{
   permissions?: WorkspacePermissions;
   callbacks?: WorkspaceActionCallbacks;
   isDisabled?: boolean;
-  hasChildren?: boolean;
-}> = ({ workspace, permissions, callbacks = NOOP_CALLBACKS, isDisabled, hasChildren }) => {
-  const items = useWorkspaceActionItems({ workspace, permissions, callbacks, hasChildren });
+}> = ({ workspace, permissions, callbacks = NOOP_CALLBACKS, isDisabled }) => {
+  const items = useWorkspaceActionItems({ workspaceId: workspace.id, permissions, callbacks });
   return <WorkspaceActions items={items} isDisabled={isDisabled} />;
 };
 
@@ -70,6 +70,9 @@ const meta: Meta<typeof WorkspaceActionsWithHook> = {
   tags: ['autodocs'],
   decorators: [withProviders],
   parameters: {
+    msw: {
+      handlers: [...workspacesHandlers([mockWorkspace, mockSubWorkspace])],
+    },
     docs: {
       description: {
         component: `
@@ -172,7 +175,12 @@ export const DeleteActionEnabled: Story = {
       await userEvent.click(actionsButton);
 
       const deleteItem = await within(document.body).findByText('Delete workspace');
-      await expect(deleteItem.closest('button')).not.toHaveAttribute('disabled');
+      await waitFor(
+        async () => {
+          await expect(deleteItem.closest('button')).not.toHaveAttribute('disabled');
+        },
+        { timeout: 5000 },
+      );
     });
   },
 };

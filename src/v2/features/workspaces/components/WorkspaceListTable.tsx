@@ -130,10 +130,9 @@ const WorkspaceRowActions: React.FC<{
   callbacks: WorkspaceActionCallbacks;
 }> = ({ workspace, permissions, callbacks }) => {
   const items = useWorkspaceActionItems({
-    workspace,
+    workspaceId: workspace.id,
     permissions,
     callbacks,
-    hasChildren: !!(workspace.children && workspace.children.length > 0),
   });
 
   return (
