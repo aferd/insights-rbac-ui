@@ -329,7 +329,7 @@ export const DefaultPlatformGroup: Story = {
     await step('Verify platform default group card', async () => {
       expect(await canvas.findByText('All users in this organization are members of this group.')).toBeInTheDocument();
 
-      const table = canvas.queryByRole('table');
+      const table = canvas.queryByRole('grid');
       expect(table).not.toBeInTheDocument();
       const addButton = canvas.queryByRole('button', { name: /add member/i });
       expect(addButton).not.toBeInTheDocument();
@@ -667,7 +667,7 @@ export const ChangedDefaultPlatformGroup: Story = {
     await step('Verify changed platform default group shows all-users alert', async () => {
       expect(await canvas.findByText('All users in this organization are members of this group.')).toBeInTheDocument();
 
-      const table = canvas.queryByRole('table');
+      const table = canvas.queryByRole('grid');
       expect(table).not.toBeInTheDocument();
       const addButton = canvas.queryByRole('button', { name: /add member/i });
       expect(addButton).not.toBeInTheDocument();
