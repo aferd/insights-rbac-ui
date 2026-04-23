@@ -191,10 +191,8 @@ For testing specific scenarios, see these additional stories:
     msw: {
       handlers: createMockHandlers(),
     },
-    permissions: {
-      orgAdmin: false,
-      userAccessAdministrator: false,
-    },
+    orgAdmin: false,
+    permissions: [],
   },
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
@@ -219,10 +217,8 @@ export const WithPermissions: Story = {
     msw: {
       handlers: createMockHandlers(),
     },
-    permissions: {
-      orgAdmin: true,
-      userAccessAdministrator: false,
-    },
+    orgAdmin: true,
+    permissions: [],
   },
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
@@ -356,10 +352,8 @@ export const FilterMembers: Story = {
         ),
       ],
     },
-    permissions: {
-      orgAdmin: true,
-      userAccessAdministrator: false,
-    },
+    orgAdmin: true,
+    permissions: [],
   },
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
@@ -426,10 +420,8 @@ export const AddMemberButton: Story = {
     msw: {
       handlers: createMockHandlers(),
     },
-    permissions: {
-      orgAdmin: true,
-      userAccessAdministrator: false,
-    },
+    orgAdmin: true,
+    permissions: [],
   },
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
@@ -460,10 +452,8 @@ export const BulkSelection: Story = {
   tags: ['perm:org-admin'],
   parameters: {
     msw: { handlers: createMockHandlers() },
-    permissions: {
-      orgAdmin: true,
-      userAccessAdministrator: false,
-    },
+    orgAdmin: true,
+    permissions: [],
   },
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
@@ -514,10 +504,8 @@ export const ToolbarActionsState: Story = {
     msw: {
       handlers: createMockHandlers(),
     },
-    permissions: {
-      orgAdmin: true,
-      userAccessAdministrator: false,
-    },
+    orgAdmin: true,
+    permissions: [],
   },
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
@@ -571,10 +559,8 @@ export const RowActions: Story = {
     msw: {
       handlers: createMockHandlers(),
     },
-    permissions: {
-      orgAdmin: true,
-      userAccessAdministrator: false,
-    },
+    orgAdmin: true,
+    permissions: [],
   },
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
@@ -622,10 +608,8 @@ Perfect for code review and UX validation.
     msw: {
       handlers: createMockHandlers(),
     },
-    permissions: {
-      orgAdmin: true,
-      userAccessAdministrator: false,
-    },
+    orgAdmin: true,
+    permissions: [],
   },
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
@@ -678,10 +662,8 @@ Perfect for testing bulk operations and proper pluralization.
     msw: {
       handlers: createMockHandlers(),
     },
-    permissions: {
-      orgAdmin: true,
-      userAccessAdministrator: false,
-    },
+    orgAdmin: true,
+    permissions: [],
   },
   play: async ({ canvasElement, step }) => {
     const canvas = within(canvasElement);
